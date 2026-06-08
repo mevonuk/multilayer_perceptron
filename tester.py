@@ -3,6 +3,8 @@ from tools.split import split_data
 from tools.preprocessing import hot_code, label_data
 from tools.preprocessing import normalized_features
 from plotting.pairplot import pairplotter
+from model_tools.MLP import MLP, binary_cross_entropy
+import numpy as np
 
 
 def main():
@@ -87,6 +89,21 @@ def main():
         # Split the dataset into test and train sets
         X_train, X_test, y_train, y_test = split_data(X, y, random_seed=42)
 
+        mp_test = MLP(len(new_feature_names), 10, 1)
+
+        epochs = 10000
+        learning_rate = 0.0001
+        mp_test.train(X_train.to_numpy(), y_train.to_numpy(), epochs, learning_rate)
+
+
+        output_prediction = mp_test.predict(X_test.to_numpy())
+
+        df = output_prediction - y_test
+        print(df.value_counts())
+
+        # compare output to real
+        y_real = y_test.to_numpy()
+        print(binary_cross_entropy(y_real, output_prediction))
   
 
     except (TypeError, Exception, KeyboardInterrupt) as e:
