@@ -1,10 +1,7 @@
 # plots histograms of data and determines if house scores are homogeneous
-import matplotlib.pyplot as plt
-import pandas as pd
-import sys
-sys.path.insert(0, "../tools")
-from load_data import load, label_data
-from math_tools import range_of_means, mean_column, std_column
+from tools.load_data import load
+from tools.preprocessing import label_data
+from plotting.pairplot import pairplotter
 
 
 def main():
@@ -14,20 +11,46 @@ def main():
 
     data = None
     try:
-        dataset = "../data/data.csv"
+        dataset = "data/data.csv"
         data = load(dataset)
-        data = label_data(data)
-
-        diagnoses = ['M', 'B']
-        diagnose_colors = {
-            'M': 'red',
-            'B': 'green',
-        }
+        labels = [
+            'ID',
+            'diagnosis',
+            'radius_mean',
+            'radius_std',
+            'radius_worst',
+            'texture_mean',
+            'texture_std',
+            'texture_worst',
+            'perimeter_mean',
+            'perimeter_std',
+            'perimeter_worst',
+            'area_mean',
+            'area_std',
+            'area_worst',
+            'smoothness_mean',
+            'smoothness_std',
+            'smoothness_worst',
+            'compactness_mean',
+            'compactness_std',
+            'compactness_worst',
+            'concavity_mean',
+            'concavity_std',
+            'concavity_worst',
+            'concave_pts_mean',
+            'concave_pts_std',
+            'concave_pts_worst',
+            'symmetry_mean',
+            'symmetry_std',
+            'symmetry_worst',
+            'fractal_dim_mean',
+            'fractal_dim_std',
+            'fractal_dim_worst',
+        ]
+        data = label_data(data, labels)
 
         # Identify features, drop ID column
         data_noid = data.drop(columns=['ID'])
-        # grab only numeric features (should be all but diagnosis)
-        feature_names = data_noid.select_dtypes(include='number').columns
 
         # just the mean features:
         mean_features = [
@@ -71,36 +94,8 @@ def main():
             'fractal_dim_worst',
         ]
 
-        # Plot one histogram per subject sequentially
-        stats = {}
-        for subject in feature_names:
-            plt.figure(figsize=(8, 5))
-            for house in diagnoses:
-                h_data = data_noid[data_noid['diagnosis'] == house]
-                scores = h_data[subject].dropna()
-                plt.hist(
-                    scores,
-                    bins=10,
-                    alpha=0.6,
-                    label=house,
-                    color=diagnose_colors[house]
-                )
-                stats[house] = [mean_column(scores), std_column(scores)]
-
-            # check means and stds for each subject to see if they are similar
-            stats_df = pd.DataFrame.from_dict(stats).T
-            stats_df.columns = ['Mean', 'Std']
-            if range_of_means(stats_df):
-                print()
-                print(subject)
-                print('Range of means is within the average std: HOMOGENOUS')
-
-            plt.title(f'{subject} Score Distribution by diagnosis')
-            plt.xlabel('Score')
-            plt.ylabel('Frequency')
-            plt.legend()
-            plt.tight_layout()
-            plt.show()
+        # Build pairplot for all features
+        pairplotter(data, worst_features, 'diagnosis', save_fig=0)
 
     except (TypeError, Exception, KeyboardInterrupt) as e:
         print(e)

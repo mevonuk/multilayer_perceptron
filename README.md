@@ -21,7 +21,7 @@ Feedforward networks are networks in which information flows in a single directi
 
 ### Backpropagation
 
-Backpropagation involves computing the gradient of the loss with respect to the weights of a network for a given input-output example.
+Backpropagation involves computing the gradient of the loss with respect to the weights of a network for a given input-output example. That is, the process of calculating and adjusting the weights to reach an optimal value.
 
 ### Gradient descent
 
@@ -55,6 +55,8 @@ Class distribution: 357 benign, 212 malignant
 
 ## Preprocessing
 
+### Labeling columns
+
 Data columns are labeled accordingly and scatterplots of the different feature combinations are made.
 
 Scatterplots and pairplots of the mean feature values reveal that the benign and malignant classes are best differentiated for:
@@ -73,7 +75,16 @@ Scatterplots and pairplots of the mean feature values reveal that the benign and
 - 'symmetry_worst',  # good
 with the other features showing some overlap.
 
-## Next
+### One-hot coding and feature normalization
 
-- need to divide data into training and testing sets
-- set up whatcha gonna dooooo
+The dataset is split into X containing the features of interest (see above) and y containing the one-hot encoding of the diagnosis column with malignant = 1.
+
+The features in X are then normalized because gradient-based optimizations are sensitive to scale and convergence may be slow or inconsistant.
+
+### Manual splitting of the dataset
+
+The use of machine learning libraries is prohibited; therefore, the dataset needs to be split manually.
+
+The two data sub sets X and y are split into 80% training / 20% testing sets. A random split is essential, so the indices need to be shuffled prior to spliting.
+
+
