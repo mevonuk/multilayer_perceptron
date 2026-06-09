@@ -41,7 +41,8 @@ def pairplotter(
     )
 
     # Adjust title
-    plt.suptitle('Pairwise Scatterplots of features', y=1.02)
+    pairplot.fig.subplots_adjust(top=0.95)
+    pairplot.fig.suptitle('Pairwise Scatterplots of features', y=0.98)
 
     # Save high-res figure
     if save_fig == 1:

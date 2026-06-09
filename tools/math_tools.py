@@ -1,5 +1,6 @@
 # mathematical tools
 import pandas as pd
+import numpy as np
 
 
 def my_abs(x: int | float) -> int | float:
@@ -26,10 +27,14 @@ def range_of_means(df) -> bool:
         return False
 
 
-def sqrt(x: int | float) -> int | float:
+def sqrt(x: int | float) -> float:
     """Returns sqrt of x"""
     if not isinstance(x, (int, float)):
         raise TypeError("for sqrt, x must be int/float")
+    if x < 0:
+        raise ValueError("sqrt undefined for negative real numbers")
+    if x == 0:
+        return 0.0
     last_guess = x / 2.0
     epsilon = .00000000000001
     while True:
@@ -60,21 +65,25 @@ def sum_items(col) -> int | float:
 def max_item(col) -> int | float:
     """Returns maximum value in pandas series"""
     col = col.dropna()
-    max = col.iloc[0]
-    for item in col:
-        if item > max:
-            max = item
-    return max
+    if len(col) > 0:
+        max = col.iloc[0]
+        for item in col:
+            if item > max:
+                max = item
+        return max
+    return np.nan
 
 
 def min_item(col) -> int | float:
     """Returns maximum value in pandas series"""
     col = col.dropna()
-    min = col.iloc[0]
-    for item in col:
-        if item < min:
-            min = item
-    return min
+    if len(col) > 0:
+        min = col.iloc[0]
+        for item in col:
+            if item < min:
+                min = item
+        return min
+    return np.nan
 
 
 def mean_column(col) -> int | float:

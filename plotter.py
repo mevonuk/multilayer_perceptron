@@ -1,13 +1,10 @@
-# plots histograms of data and determines if house scores are homogeneous
 from tools.load_data import load
 from tools.preprocessing import label_data
 from plotting.pairplot import pairplotter
 
 
 def main():
-    """Loads data, displays histograms,
-    and calculates the max diff in Means compared to mean Std
-    to indicate if distributions are homogeneous"""
+    """Loads data, plots pairplot of chosen features"""
 
     data = None
     try:

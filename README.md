@@ -87,4 +87,6 @@ The use of machine learning libraries is prohibited; therefore, the dataset need
 
 The two data sub sets X and y are split into 80% training / 20% testing sets. A random split is essential, so the indices need to be shuffled prior to spliting.
 
+## MLP class
 
+A class is created to hold the weights and biases of the layers, as well as to provide routines to make forward and backward passes. The class can also save the state of the weights/biases to a pickle file, and load a pickle file with said weights and biases.
