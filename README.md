@@ -89,7 +89,7 @@ The two data sub sets X and y are split into 80% training / 20% testing sets. A 
 
 ## MLP class
 
-A class is created to hold the weights and biases of the layers, as well as to provide routines to make forward and backward passes. The class can also save the state of the weights/biases to a pickle file, and load a pickle file with said weights and biases.
+A class is created to hold the weights and biases of the layers, as well as to provide routines to make forward and backward passes. The class can also save the state of the weights/biases/normalization to a pickle file, and load a pickle file with said weights, biases, and normalization terms.
 
 Next:
 - graphing during training for loss and accuracy

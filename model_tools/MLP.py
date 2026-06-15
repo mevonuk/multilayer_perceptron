@@ -1,11 +1,39 @@
+import sys
 import numpy as np
 import pickle
+import matplotlib.pyplot as plt
 
 
 def binary_cross_entropy(y_true, y_pred, epsilon=1e-15):
     """calculate the binary cross entropy"""
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
     return -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+
+
+def plot_loss(training_loss):
+    """plot the loss history"""
+    plt.plot(training_loss)
+    plt.title("Loss Function vs Epoch")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.grid(True)
+    plt.show()
+
+
+def plot_loss2(training_loss, validation_loss):
+    """plot training and validation loss history"""
+    plt.figure(figsize=(8, 5))
+
+    plt.plot(training_loss, label="Training Loss")
+    plt.plot(validation_loss, label="Validation Loss")
+
+    plt.title("Loss Function vs Epoch")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.grid(True)
+    plt.legend()
+
+    plt.show()
 
 
 class MLP:
@@ -28,12 +56,8 @@ class MLP:
 
     def sigmoid(self, x):
         """sigmoid function"""
+        x = np.clip(x, -500, 500)
         return 1 / (1 + np.exp(-x))
-    
-    def softmax(self, x):
-        """softmax function"""
-        exp_x = np.exp(x - np.max(x))
-        return exp_x / exp_x.sum(axis=1, keepdims=True)
 
     def forward(self, X):
         """forward propagation"""
@@ -73,23 +97,59 @@ class MLP:
 
     def train(self, X, y, epochs, learning_rate):
         """Train model"""
+        # set up mean square error array to track progress with each iteration
+        loss_history = []
         for epoch in range(epochs):
             # forward pass
             output = self.forward(X)
             # backward pass
             self.backward(X, y, output, learning_rate)
-            # periodically calculate and print the loss
-            if (epoch + 1) % 1000 == 0:
-                # loss: binary cross-entropy error function
-                loss = -np.sum(y * np.log(output) + (1 - y) * np.log(1 - output)) / X.shape[0]
+            # calculate the loss
+            # loss: binary cross-entropy error function
+            loss = binary_cross_entropy(y, output)
+            loss_history.append(loss)
+            # periodically print the loss
+            if (epoch + 1) % 10 == 0:
                 print(f'Epoch {epoch+1}, Loss: {loss:.4f}')
+
+        return loss_history
+
+    def train_with_validation(self, X_train, y_train, X_val, y_val, epochs, learning_rate):
+        """Train model"""
+        # set up mean square error array to track progress with each iteration
+        training_loss = []
+        validation_loss = []
+        for epoch in range(epochs):
+            # forward pass
+            output = self.forward(X_train)
+            # backward pass
+            self.backward(X_train, y_train, output, learning_rate)
+            
+            # calculate the loss
+            # loss: binary cross-entropy error function
+            output = self.forward(X_train)
+            loss = binary_cross_entropy(y_train, output)
+            training_loss.append(loss)
+
+            # check validation set
+            output_val = self.forward(X_val)
+            val_loss = binary_cross_entropy(y_val, output_val)
+            validation_loss.append(val_loss)
+            # periodically print the loss
+            if (epoch + 1) % 10 == 0:
+                print(f'Epoch {epoch+1}, Loss: {loss:.4f}, Val loss: {val_loss:.4f}')
+
+        return training_loss, validation_loss
 
     def predict(self, X):
         """make a prediction"""
         # first scale test data in same way train data was scaled to match weights and biases
         features = X.columns
-        X[features] = (X[features] - self.mu) / self.sigma
-        output = self.forward(X.to_numpy())
+
+        X_scaled = X.copy()
+        X_scaled[features] = (X_scaled[features] - self.mu) / self.sigma
+        output = self.forward(X_scaled.to_numpy())
+
         return (output > 0.5).astype(int)
 
     def save_weights(self, file_name='trained_weights.pkl'):

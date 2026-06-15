@@ -3,7 +3,7 @@ from tools.split import split_data
 from tools.preprocessing import hot_code, label_data
 from tools.preprocessing import normalized_features, get_mean_std
 from plotting.pairplot import pairplotter
-from model_tools.MLP import MLP, binary_cross_entropy
+from model_tools.MLP import MLP, binary_cross_entropy, plot_loss, plot_loss2
 import numpy as np
 import argparse
 import pickle
@@ -42,7 +42,7 @@ def main():
     parser.add_argument(
         "--max_epochs",
         type=int,
-        default=10000,
+        default=100,
         help="Maximum number of Epochs"
     )
 
@@ -216,7 +216,14 @@ def main():
             mp_test = MLP(X_train.shape[1], hidden_size, 1, mu, sigma)
 
             # train the model
-            mp_test.train(X_train.to_numpy(), y_train.to_numpy(), max_epochs, learn_rate)
+            # loss = mp_test.train(X_train.to_numpy(), y_train.to_numpy(), max_epochs, learn_rate)
+            # plot_loss(loss)
+
+            # train while traccking performance on validation set
+            X_test[features] = (X_test[features] - mu) / sigma
+            train_loss, val_loss = mp_test.train_with_validation(
+                X_train.to_numpy(), y_train.to_numpy(), X_test.to_numpy(), y_test.to_numpy(), max_epochs, learn_rate)
+            plot_loss2(train_loss, val_loss)
 
             # save the weights and biases
             mp_test.save_weights()
