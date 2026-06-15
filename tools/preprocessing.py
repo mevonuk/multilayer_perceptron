@@ -35,3 +35,20 @@ def normalized_features(df, cols):
         feature_stds.append(std_col)
 
     return df, new_names, feature_means, feature_stds
+
+
+def get_mean_std(df, cols):
+    """get means and stds"""
+    feature_means = []
+    feature_stds = []
+
+    for col in cols:
+        mean_col = mean_column(df[col])
+        std_col = std_column(df[col])
+        feature_means.append(mean_col)
+        feature_stds.append(std_col)
+
+    feature_stds = np.asarray(feature_stds)
+    feature_means = np.asarray(feature_means)
+
+    return feature_means, feature_stds

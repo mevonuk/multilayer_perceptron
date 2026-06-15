@@ -1,7 +1,7 @@
 from tools.load_data import load
 from tools.split import split_data
 from tools.preprocessing import hot_code, label_data
-from tools.preprocessing import normalized_features
+from tools.preprocessing import normalized_features, get_mean_std
 from plotting.pairplot import pairplotter
 from model_tools.MLP import MLP, binary_cross_entropy
 import numpy as np
@@ -53,6 +53,14 @@ def main():
         help="Learning rate"
     )
 
+    parser.add_argument(
+        "--verbose",
+        type=bool,
+        default=False,
+        choices=[True, False],
+        help="Verbose mode"
+    )
+
     args = parser.parse_args()
 
     program_mode = args.program_mode
@@ -60,6 +68,7 @@ def main():
     max_epochs = args.max_epochs
     learn_rate = args.learn_rate
     split_size = args.split_size
+    verbose = args.verbose
     print("Running program in program mode:", program_mode)
     print("with", hidden_size, "neurons in the each of the two hidden layers")
     
@@ -131,28 +140,22 @@ def main():
             diagnoses = ['M', 'B']
             data = hot_code(data, 'M', 'diagnosis', 'one_hot')
 
-            # feature normalization
-            print("normalizing features...")
-            data, new_feature_names, f_means, f_stds = normalized_features(
-                data, features)
-
-            # (optional) plot normalized features if necessary
-            # pairplotter(data, new_feature_names, 'diagnosis')
-
             # extracting X and y data arrays
             # y is the diagnosis one-hot coded
             # X contains the normalized features: chosen based on the graph analysis
-            X = data.loc[:, data.columns.intersection(new_feature_names)]
+            X = data.loc[:, data.columns.intersection(features)]
             y = data.loc[:, data.columns.intersection(['one_hot'])]
 
             # Split the dataset into test and train sets
-            X_train, X_test, y_train, y_test = split_data(X, y, random_seed=42)
-
             if split_size > 0.9 or split_size < 0.1:
                 print("Split out of range, defaulting to 0.8 / 0.2 for the train / test ratio")
                 split_size = 0.2
             else:
                 print("spliting data with train / test ratio:", 1 - split_size, "/", split_size)
+
+            X_train, X_test, y_train, y_test = split_data(X, y, test_size=split_size, random_seed=42)
+
+            # store the datasets to be stowed in pickle file
             split_datasets = {
                 'X_train' : X_train,
                 'X_test' : X_test,
@@ -197,15 +200,27 @@ def main():
 
         try:
             print("initializing and training MLP model...")
+
+            # feature normalization
+            # compute statistics on training set
+            features = X_train.columns
+            mu, sigma = get_mean_std(X_train, features)
+
+            # apply normalization transformation to training set
+            X_train[features] = (X_train[features] - mu) / sigma
+
+            # (optional) plot normalized features if necessary
+            if verbose: pairplotter(data, features, 'diagnosis')
+
             # make the MLP specifying size of hidden and output layers
-            mp_test = MLP(X_train.shape[1], hidden_size, 1)
+            mp_test = MLP(X_train.shape[1], hidden_size, 1, mu, sigma)
 
             # train the model
             mp_test.train(X_train.to_numpy(), y_train.to_numpy(), max_epochs, learn_rate)
 
             # save the weights and biases
             mp_test.save_weights()
-            print("training weights saved.")
+            print("training weights and normalization saved.")
 
         except (TypeError, Exception, KeyboardInterrupt) as e:
             print(e)
@@ -221,7 +236,7 @@ def main():
 
             # make a prediction using the trained weights and the test data
             print("Making prediction...")
-            output_prediction = mp_test.predict(X_test.to_numpy())
+            output_prediction = mp_test.predict(X_test)
 
             output_prob = mp_test.forward(X_test.to_numpy())
             print(

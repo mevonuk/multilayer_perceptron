@@ -10,7 +10,7 @@ def binary_cross_entropy(y_true, y_pred, epsilon=1e-15):
 
 class MLP:
     """multilayer perceptron class with 2 hidden layers"""
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size, output_size, mu=1, sigma=1):
         """randomly initializes weights between 4 layers:
         input to hidden1,
         hidden1 to hidden2,
@@ -23,6 +23,8 @@ class MLP:
         self.bias_hidden2 = np.zeros((1, hidden_size))
         self.bias_output = np.zeros((1, output_size))
         self.hidden_size = hidden_size
+        self.mu = mu
+        self.sigma = sigma
 
     def sigmoid(self, x):
         """sigmoid function"""
@@ -84,11 +86,15 @@ class MLP:
 
     def predict(self, X):
         """make a prediction"""
-        output = self.forward(X)
+        # first scale test data in same way train data was scaled to match weights and biases
+        features = X.columns
+        X[features] = (X[features] - self.mu) / self.sigma
+        output = self.forward(X.to_numpy())
         return (output > 0.5).astype(int)
 
     def save_weights(self, file_name='trained_weights.pkl'):
         """Save everything to a pickle file"""
+
         model_data = {
             'hidden_size' : self.hidden_size,
             'weights_input_hidden1' : self.weights_input_hidden1,
@@ -97,6 +103,8 @@ class MLP:
             'bias_hidden1' : self.bias_hidden1,
             'bias_hidden2' : self.bias_hidden2,
             'bias_output' : self.bias_output,
+            'mu' : self.mu,
+            'sigma' : self.sigma,
         }
         with open(file_name, "wb") as f:
             pickle.dump(model_data, f)
@@ -116,6 +124,7 @@ class MLP:
             ) as e:
                 print(f"Error parsing pickle file: {e}.")
                 sys.exit(1)
+
         hidden_size = model_data['hidden_size']
         if hidden_size != self.hidden_size:
             print("Override of hidden layer size to:", hidden_size)
@@ -126,4 +135,7 @@ class MLP:
         self.bias_hidden1 = model_data['bias_hidden1']
         self.bias_hidden2 = model_data['bias_hidden2']
         self.bias_output = model_data['bias_output']
+        self.mu = model_data['mu']
+        self.sigma = model_data['sigma']
+
         print("Model weights loaded from", file_name)
