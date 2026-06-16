@@ -3,7 +3,7 @@ import seaborn as sns
 import pandas as pd
 
 
-def create_color_mapping(df: pd.core.frame.DataFrame, col: str) -> dict:
+def create_color_mapping(df: pd.DataFrame, col: str) -> dict:
     """unique color mapping only good to 10 categories"""
     colors = [
         'red', 'green', 'blue', 'orange', 'purple',
@@ -21,10 +21,10 @@ def create_color_mapping(df: pd.core.frame.DataFrame, col: str) -> dict:
 
 
 def pairplotter(
-    data: pd.core.frame.DataFrame,
+    data: pd.DataFrame,
     features: list,
     versus: str,
-    save_fig=0
+    save_fig=False
     ):
     """displays pairplot"""
 
@@ -45,7 +45,7 @@ def pairplotter(
     pairplot.fig.suptitle('Pairwise Scatterplots of features', y=0.98)
 
     # Save high-res figure
-    if save_fig == 1:
+    if save_fig:
         pairplot.savefig("pairplot_features.pdf", dpi=600)
 
     plt.show()

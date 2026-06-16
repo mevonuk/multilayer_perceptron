@@ -92,7 +92,7 @@ def main():
         ]
 
         # Build pairplot for all features
-        pairplotter(data, worst_features, 'diagnosis', save_fig=0)
+        pairplotter(data, worst_features, 'diagnosis', save_fig=False)
 
     except (TypeError, Exception, KeyboardInterrupt) as e:
         print(e)

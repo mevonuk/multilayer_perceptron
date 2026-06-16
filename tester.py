@@ -1,12 +1,14 @@
 from tools.load_data import load
 from tools.split import split_data
 from tools.preprocessing import hot_code, label_data
-from tools.preprocessing import normalized_features, get_mean_std
 from plotting.pairplot import pairplotter
-from model_tools.MLP import MLP, binary_cross_entropy, plot_loss, plot_loss2
-import numpy as np
+from tools.plot_loss import plot2
+from tools.math_tools import my_metrics, binary_cross_entropy
+from tools.MLP import MLP
 import argparse
 import pickle
+import sys
+import pandas as pd
 
 
 def main():
@@ -55,9 +57,9 @@ def main():
 
     parser.add_argument(
         "--verbose",
-        type=bool,
-        default=False,
-        choices=[True, False],
+        type=int,
+        default=0,
+        choices=[1, 0],
         help="Verbose mode"
     )
 
@@ -74,7 +76,7 @@ def main():
     
 
     if program_mode in ("pre_process", "all"):
-        print("Starting pre-processing of data...")
+        print("\nStarting pre-processing of data...")
         data = None
         try:
             dataset = "data/data.csv"
@@ -124,20 +126,16 @@ def main():
                 'texture_mean',
                 'perimeter_mean',
                 'fractal_dim_mean',
-                'radius_std',  # okay
-                'perimeter_std',  # good
-                'concave_pts_std',  # good
-                'symmetry_std',  # good
-                'radius_worst',  # good
-                'texture_worst',  # okay
-                'concavity_worst',  # good
-                'concave_pts_worst',  # good
-                'symmetry_worst',  # good
+                'perimeter_std',
+                'concave_pts_std',
+                'radius_worst',
+                'concavity_worst',
+                'concave_pts_worst',
+                'symmetry_worst',
             ]
 
             # one-hot code the diagnosis
             print("One-hot encoding diagnosis...")
-            diagnoses = ['M', 'B']
             data = hot_code(data, 'M', 'diagnosis', 'one_hot')
 
             # extracting X and y data arrays
@@ -168,10 +166,9 @@ def main():
 
         except (TypeError, Exception, KeyboardInterrupt) as e:
             print(e)
-        
+
     if program_mode in ("train", "predict"):
-        print("maximum number of epochs:", max_epochs)
-        print("Learning rate:", learn_rate)
+        print("\nLoading the split datasets...")
         try:
             with open("split_datasets.pkl", "rb") as f:
                 try:
@@ -197,33 +194,44 @@ def main():
             print(e)
 
     if program_mode in ("train", "all"):
+        print("\nStarting training of model...")
+        print("maximum number of epochs:", max_epochs)
+        print("Learning rate:", learn_rate)
 
         try:
-            print("initializing and training MLP model...")
-
-            # feature normalization
-            # compute statistics on training set
-            features = X_train.columns
-            mu, sigma = get_mean_std(X_train, features)
-
-            # apply normalization transformation to training set
-            X_train[features] = (X_train[features] - mu) / sigma
-
-            # (optional) plot normalized features if necessary
-            if verbose: pairplotter(data, features, 'diagnosis')
+            if verbose: print("initializing and training MLP model...")
 
             # make the MLP specifying size of hidden and output layers
-            mp_test = MLP(X_train.shape[1], hidden_size, 1, mu, sigma)
+            mp_test = MLP(X_train.shape[1], hidden_size, 1)
+
+            # feature normalization
+            if verbose: print("Normalizing training set...")
+            X_train_norm = mp_test.normalize_data(X_train, set_norm=True)
+
+            # (optional) plot normalized features if necessary
+            if verbose:
+                print("Plotting normalized data...")
+                features = X_train_norm.columns
+                features_to_plot = features.to_list()
+                data_to_plot = pd.merge(
+                    X_train_norm, y_train,
+                    right_index=True, left_index=True)
+                pairplotter(data_to_plot, features_to_plot, 'one_hot', save_fig=True)
 
             # train the model
-            # loss = mp_test.train(X_train.to_numpy(), y_train.to_numpy(), max_epochs, learn_rate)
+            # loss = mp_test.train(X_train_norm.to_numpy(), y_train.to_numpy(), max_epochs, learn_rate)
             # plot_loss(loss)
 
-            # train while traccking performance on validation set
-            X_test[features] = (X_test[features] - mu) / sigma
-            train_loss, val_loss = mp_test.train_with_validation(
-                X_train.to_numpy(), y_train.to_numpy(), X_test.to_numpy(), y_test.to_numpy(), max_epochs, learn_rate)
-            plot_loss2(train_loss, val_loss)
+            # train while tracking performance on validation set
+            y_validation = y_test.copy()
+            X_validation_norm = mp_test.normalize_data(X_test, set_norm=False)
+
+            train_loss, val_loss, train_acc, val_acc = mp_test.train_with_validation(
+                X_train_norm.to_numpy(), y_train.to_numpy(),
+                X_validation_norm.to_numpy(), y_validation.to_numpy(),
+                max_epochs, learn_rate)
+            plot2(train_loss, val_loss, 'Loss')
+            plot2(train_acc, val_acc, 'Accuracy')
 
             # save the weights and biases
             mp_test.save_weights()
@@ -233,6 +241,7 @@ def main():
             print(e)
 
     if program_mode in ("predict", "all"):
+        print("\nPredicting using test dataset...")
         try:
             # make the MLP specifying size of hidden and output layers
             mp_test = MLP(X_test.shape[1], hidden_size, 1)
@@ -243,16 +252,20 @@ def main():
 
             # make a prediction using the trained weights and the test data
             print("Making prediction...")
-            output_prediction = mp_test.predict(X_test)
+            output_prediction, output_prob = mp_test.predict(X_test)
 
-            output_prob = mp_test.forward(X_test.to_numpy())
             print(
                 "Binary cross entropy of the prediction:",
                 binary_cross_entropy(y_test.to_numpy(), output_prob))
 
             # compare prediction to real values
-            accuracy = np.mean(output_prediction == y_test.to_numpy())
-            print("Accuracy of the prediction:", accuracy)
+            print("\nMetrics of the final prediction:")
+            accuracy, precision, recall, F1 = my_metrics(
+                output_prediction, y_test.to_numpy())
+            print("accuracy :", accuracy)
+            print('precision:', precision)
+            print('recall   :', recall)
+            print('F1       :', F1)
     
         except (TypeError, Exception, KeyboardInterrupt) as e:
             print(e)

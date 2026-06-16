@@ -1,44 +1,14 @@
 import sys
 import numpy as np
 import pickle
-import matplotlib.pyplot as plt
-
-
-def binary_cross_entropy(y_true, y_pred, epsilon=1e-15):
-    """calculate the binary cross entropy"""
-    y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
-    return -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
-
-
-def plot_loss(training_loss):
-    """plot the loss history"""
-    plt.plot(training_loss)
-    plt.title("Loss Function vs Epoch")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.grid(True)
-    plt.show()
-
-
-def plot_loss2(training_loss, validation_loss):
-    """plot training and validation loss history"""
-    plt.figure(figsize=(8, 5))
-
-    plt.plot(training_loss, label="Training Loss")
-    plt.plot(validation_loss, label="Validation Loss")
-
-    plt.title("Loss Function vs Epoch")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.grid(True)
-    plt.legend()
-
-    plt.show()
+from .preprocessing import get_mean_std
+from .math_tools import my_metrics, my_abs, binary_cross_entropy
+from .plot_loss import plot_metrics
 
 
 class MLP:
     """multilayer perceptron class with 2 hidden layers"""
-    def __init__(self, input_size, hidden_size, output_size, mu=1, sigma=1):
+    def __init__(self, input_size, hidden_size, output_size):
         """randomly initializes weights between 4 layers:
         input to hidden1,
         hidden1 to hidden2,
@@ -51,8 +21,21 @@ class MLP:
         self.bias_hidden2 = np.zeros((1, hidden_size))
         self.bias_output = np.zeros((1, output_size))
         self.hidden_size = hidden_size
-        self.mu = mu
-        self.sigma = sigma
+        # set mu and sigma to default values
+        self.mu = 1.0
+        self.sigma = 1.0
+
+    def normalize_data(self, X, set_norm=False):
+        """normalize the dataset"""
+        features = X.columns
+        if set_norm:
+            # compute statistics on training set
+            self.mu, self.sigma = get_mean_std(X, features)
+
+        # apply normalization transformation to training set
+        X_scaled = X.copy()
+        X_scaled[features] = (X_scaled[features] - self.mu) / self.sigma
+        return X_scaled
 
     def sigmoid(self, x):
         """sigmoid function"""
@@ -114,12 +97,22 @@ class MLP:
 
         return loss_history
 
-    def train_with_validation(self, X_train, y_train, X_val, y_val, epochs, learning_rate):
-        """Train model"""
-        # set up mean square error array to track progress with each iteration
+    def train_with_validation(
+            self, X_train, y_train,
+            X_val, y_val,
+            epochs, learning_rate, stop_pt=5e-4):
+        """Train model while tracking performance on validation set"""
+        # set up arrays to track progress with each iteration
         training_loss = []
         validation_loss = []
+        acc = []
+        acc_val = []
+        training_F1 = []
+        training_precision = []
+        prev_loss = None
         for epoch in range(epochs):
+
+            # train the model:
             # forward pass
             output = self.forward(X_train)
             # backward pass
@@ -131,26 +124,55 @@ class MLP:
             loss = binary_cross_entropy(y_train, output)
             training_loss.append(loss)
 
-            # check validation set
+            # check the validation set
             output_val = self.forward(X_val)
             val_loss = binary_cross_entropy(y_val, output_val)
             validation_loss.append(val_loss)
-            # periodically print the loss
+
+            # track metrics
+            out_train = self.make_prediction(X_train)
+            out_val = self.make_prediction(X_val)
+
+            t_acc, t_per, t_recall, t_F1 = my_metrics(out_train, y_train)
+            v_acc, v_per, v_recall, v_F1 = my_metrics(out_val, y_val)
+
+            training_precision.append(t_per)
+            training_F1.append(t_F1)
+
+            acc.append(t_acc)
+            acc_val.append(v_acc)
+
+            # periodically print the loss and accuracy
             if (epoch + 1) % 10 == 0:
-                print(f'Epoch {epoch+1}, Loss: {loss:.4f}, Val loss: {val_loss:.4f}')
+                print(f'Epoch {epoch+1}')
+                print(f'Loss:      training: {loss:.4f}, validation: {val_loss:.4f}')
+                print(f'Accuracy:  training: {t_acc:.4f}, validation: {v_acc:.4f}')
+                print(f'Precision: training: {t_per:.4f}, validation: {v_per:.4f}')
+                print(f'Recall:    training: {t_recall:.4f}, validation: {v_recall:.4f}')
+                print(f'F1:        training: {t_F1:.4f}, validation: {v_F1:.4f}')
 
-        return training_loss, validation_loss
+            # Early stopping if loss stabilizes
+            if prev_loss is not None and my_abs(prev_loss - loss) <= stop_pt:
+                break
+            prev_loss = loss
 
+        # plot curves
+        plot_metrics(acc, training_precision, training_F1, title="Training metrics")
+
+        # return histories of the loss and accuracy
+        return training_loss, validation_loss, acc, acc_val
+
+    def make_prediction(self, X):
+        """make a prediction"""
+        output = self.forward(X)
+        return (output > 0.5).astype(int)
+    
     def predict(self, X):
         """make a prediction"""
         # first scale test data in same way train data was scaled to match weights and biases
-        features = X.columns
-
-        X_scaled = X.copy()
-        X_scaled[features] = (X_scaled[features] - self.mu) / self.sigma
-        output = self.forward(X_scaled.to_numpy())
-
-        return (output > 0.5).astype(int)
+        X_scaled = self.normalize_data(X, set_norm=False)
+        # return prediction and probability based on scaled data
+        return self.make_prediction(X_scaled), self.forward(X_scaled)
 
     def save_weights(self, file_name='trained_weights.pkl'):
         """Save everything to a pickle file"""
