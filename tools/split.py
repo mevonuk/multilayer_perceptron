@@ -8,6 +8,13 @@ def split_data(X, y, test_size=0.2, random_seed=None):
     if random_seed is not None:
         random.seed(random_seed)
 
+    # check validity of test_size
+    if test_size > 0.9 or test_size < 0.1:
+        print("Split out of range, defaulting to 0.8 / 0.2 for the train / test ratio")
+        test_size = 0.2
+    else:
+        print("spliting data with train / test ratio:", 1 - test_size, "/", test_size)
+
     # create list of indices
     n_samples = len(X)
     indices = list(range(n_samples))

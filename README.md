@@ -97,11 +97,36 @@ The two data sub sets X and y are split into 80% training / 20% testing sets. A 
 
 A class is created to hold the weights and biases of the layers, as well as to provide routines to make forward and backward passes. The class can also save the state of the weights/biases/normalization to a pickle file, and load a pickle file with said weights, biases, and normalization terms.
 
+The class is hard coded to have an input layer, two hidden layers, and an output layer.
+
+## Program modes
+
+The main program can be run in different program modes: pre_process; train; predict; and all.
+
+### pre_process
+
+- hot codes the diagnosis field
+- splits the data into train and test sets
+- saves the split data to a pickle file
+
+### train
+
+- loads split data
+- initializes and trains MLP model
+- early stopping is implemented
+- plots training metrics (accuracy, precision, F1) versus Epoch
+- plots loss and accuracy versus epoch for the training and validation sets
+- saves weights and biases (trained model) to a pickle file
+
+### predict
+
+- loads split data
+- loads saved MLP model weights and biases
+- makes a prediction for the test set
+- gives final metrics for the final prediction
+
+
 Next:
-- graphing during training for loss and accuracy - done
-- early stopping - done
 - A more complex optimization function (for example: Nesterov momentum,
 RMSprop, Adam, ...).
-- Evaluate the learning phase with multiple metrics. - done with F1, recall, percision and accuracy
-- A history of the metrics obtained during training. - done for loss and accuracy
 - A display of multiple learning curves on the same graph (really useful to compare different models). - done for three training metrics

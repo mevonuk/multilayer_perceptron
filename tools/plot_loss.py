@@ -27,12 +27,13 @@ def plot2(training, validation, title):
     plt.show()
 
 
-def plot_metrics(accuracy, percision, F1, title):
+def plot_metrics(accuracy, percision, recall, F1, title):
     """plot metrics history"""
     plt.figure(figsize=(8, 5))
 
     plt.plot(accuracy, label="accuracy")
     plt.plot(percision, label="precision")
+    plt.plot(recall, label="recall")
     plt.plot(F1, label="F1")
 
     plt.title(title + " vs Epoch")

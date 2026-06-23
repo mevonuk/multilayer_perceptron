@@ -14,8 +14,42 @@ def hot_code(
     return df
 
 
-def label_data(df: pd.core.frame.DataFrame, labels: list) -> pd.core.frame.DataFrame:
+def label_data(df: pd.DataFrame) -> pd.DataFrame:
     """adds column labels to dataframe"""
+    labels = [
+        'ID',
+        'diagnosis',
+        'radius_mean',
+        'radius_std',
+        'radius_worst',
+        'texture_mean',
+        'texture_std',
+        'texture_worst',
+        'perimeter_mean',
+        'perimeter_std',
+        'perimeter_worst',
+        'area_mean',
+        'area_std',
+        'area_worst',
+        'smoothness_mean',
+        'smoothness_std',
+        'smoothness_worst',
+        'compactness_mean',
+        'compactness_std',
+        'compactness_worst',
+        'concavity_mean',
+        'concavity_std',
+        'concavity_worst',
+        'concave_pts_mean',
+        'concave_pts_std',
+        'concave_pts_worst',
+        'symmetry_mean',
+        'symmetry_std',
+        'symmetry_worst',
+        'fractal_dim_mean',
+        'fractal_dim_std',
+        'fractal_dim_worst',
+    ]
     df.columns = labels
     return df
 

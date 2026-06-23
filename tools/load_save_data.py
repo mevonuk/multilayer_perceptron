@@ -1,6 +1,7 @@
 # load a csv file without header into a pandas dataframe
 import pandas as pd
 import os
+import pickle
 
 
 def load(path: str) -> pd.core.frame.DataFrame:
@@ -33,3 +34,38 @@ def load(path: str) -> pd.core.frame.DataFrame:
     except UnicodeDecodeError:
         print("Encoding issue. Try a different encoding.")
         return None
+
+
+def load_split_data(filename="split_datasets.pkl"):
+    with open(filename, "rb") as f:
+        try:
+            split_datasets = pickle.load(f)
+        except (
+            pickle.UnpicklingError,
+            EOFError,
+            AttributeError,
+            ImportError,
+            IndexError
+        ) as e:
+            print(f"Error parsing pickle file: {e}.")
+            sys.exit(1)
+
+    X_train = split_datasets['X_train']
+    X_test = split_datasets['X_test']
+    y_train = split_datasets['y_train']
+    y_test = split_datasets['y_test']
+
+    return X_train, y_train, X_test, y_test
+
+
+def save_split_data(X_train, y_train, X_test, y_test, filename="split_datasets.pkl"):
+    # store the datasets to be stowed in pickle file
+    split_datasets = {
+        'X_train' : X_train,
+        'X_test' : X_test,
+        'y_train' : y_train,
+        'y_test' : y_test,
+    }
+    with open(filename, "wb") as f:
+        pickle.dump(split_datasets, f)
+    print("Split datasets saved to", filename)

@@ -1,4 +1,4 @@
-from tools.load_data import load
+from tools.load_save_data import load, load_split_data, save_split_data
 from tools.split import split_data
 from tools.preprocessing import hot_code, label_data
 from tools.preprocessing import get_mean_std
@@ -72,8 +72,10 @@ def main():
     learn_rate = args.learn_rate
     split_size = args.split_size
     verbose = args.verbose
+
     print("Running program in program mode:", program_mode)
-    print("with", hidden_size, "neurons in the each of the two hidden layers")
+    if program_mode in ["train", "predict", "all"]:
+        print("with", hidden_size, "neurons in the each of the two hidden layers")
     
 
     if program_mode in ("pre_process", "all"):
@@ -85,41 +87,7 @@ def main():
             # load dataset
             data = load(dataset)
             # label columns
-            labels = [
-                'ID',
-                'diagnosis',
-                'radius_mean',
-                'radius_std',
-                'radius_worst',
-                'texture_mean',
-                'texture_std',
-                'texture_worst',
-                'perimeter_mean',
-                'perimeter_std',
-                'perimeter_worst',
-                'area_mean',
-                'area_std',
-                'area_worst',
-                'smoothness_mean',
-                'smoothness_std',
-                'smoothness_worst',
-                'compactness_mean',
-                'compactness_std',
-                'compactness_worst',
-                'concavity_mean',
-                'concavity_std',
-                'concavity_worst',
-                'concave_pts_mean',
-                'concave_pts_std',
-                'concave_pts_worst',
-                'symmetry_mean',
-                'symmetry_std',
-                'symmetry_worst',
-                'fractal_dim_mean',
-                'fractal_dim_std',
-                'fractal_dim_worst',
-            ]
-            data = label_data(data, labels)
+            data = label_data(data)
 
             # chosen features
             features = [
@@ -139,60 +107,27 @@ def main():
             print("One-hot encoding diagnosis...")
             data = hot_code(data, 'M', 'diagnosis', 'one_hot')
 
-            # extracting X and y data arrays
+            # extract X and y data arrays
             # y is the diagnosis one-hot coded
             # X contains the normalized features: chosen based on the graph analysis
+            print("Extract X and y data arrays")
             X = data.loc[:, data.columns.intersection(features)]
             y = data.loc[:, data.columns.intersection(['one_hot'])]
 
             # Split the dataset into test and train sets
-            if split_size > 0.9 or split_size < 0.1:
-                print("Split out of range, defaulting to 0.8 / 0.2 for the train / test ratio")
-                split_size = 0.2
-            else:
-                print("spliting data with train / test ratio:", 1 - split_size, "/", split_size)
-
             X_train, X_test, y_train, y_test = split_data(X, y, test_size=split_size, random_seed=42)
 
-            # store the datasets to be stowed in pickle file
-            split_datasets = {
-                'X_train' : X_train,
-                'X_test' : X_test,
-                'y_train' : y_train,
-                'y_test' : y_test,
-            }
-            with open("split_datasets.pkl", "wb") as f:
-                pickle.dump(split_datasets, f)
-            print("Split datasets saved to split_datasets.pkl")
+            # store the datasets to be stowed in a pickle file
+            save_split_data(X_train, y_train, X_test, y_test)
 
         except (TypeError, Exception, KeyboardInterrupt) as e:
             print(e)
 
     if program_mode in ("train", "predict"):
         print("\nLoading the split datasets...")
-        try:
-            with open("split_datasets.pkl", "rb") as f:
-                try:
-                    split_datasets = pickle.load(f)
-                except (
-                    pickle.UnpicklingError,
-                    EOFError,
-                    AttributeError,
-                    ImportError,
-                    IndexError
-                ) as e:
-                    print(f"Error parsing pickle file: {e}.")
-                    sys.exit(1)
+        X_train, y_train, X_test, y_test = load_split_data()
+        print("Split data loaded")
 
-            X_train = split_datasets['X_train']
-            X_test = split_datasets['X_test']
-            y_train = split_datasets['y_train']
-            y_test = split_datasets['y_test']
-
-            print("Split data loaded")
-
-        except (TypeError, Exception, KeyboardInterrupt) as e:
-            print(e)
 
     if program_mode in ("train", "all"):
         print("\nStarting training of model...")
@@ -200,13 +135,13 @@ def main():
         print("Learning rate:", learn_rate)
 
         try:
-            if verbose: print("initializing and training MLP model...")
+            print("initializing and training MLP model...")
 
             # make the MLP specifying size of hidden and output layers
             mp_test = MLP(X_train.shape[1], hidden_size, 1)
 
             # feature normalization
-            if verbose: print("Normalizing training set...")
+            print("Normalizing training set...")
             X_train_norm = mp_test.normalize_data(X_train, set_norm=True)
 
             # (optional) plot normalized features if necessary
@@ -219,14 +154,11 @@ def main():
                     right_index=True, left_index=True)
                 pairplotter(data_to_plot, features_to_plot, 'one_hot', save_fig=True)
 
-            # train the model
-            # loss = mp_test.train(X_train_norm.to_numpy(), y_train.to_numpy(), max_epochs, learn_rate)
-            # plot_loss(loss)
-
-            # train while tracking performance on validation set
             y_validation = y_test.copy()
+            # normalize validation data using norm values of train set
             X_validation_norm = mp_test.normalize_data(X_test, set_norm=False)
 
+            # train while tracking performance on validation set
             train_loss, val_loss, train_acc, val_acc = mp_test.train_with_validation(
                 X_train_norm.to_numpy(), y_train.to_numpy(),
                 X_validation_norm.to_numpy(), y_validation.to_numpy(),

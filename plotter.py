@@ -1,4 +1,4 @@
-from tools.load_data import load
+from tools.load_save_data import load
 from tools.preprocessing import label_data
 from plotting.pairplot import pairplotter
 import argparse
@@ -24,41 +24,9 @@ def main():
     try:
         dataset = "data/data.csv"
         data = load(dataset)
-        labels = [
-            'ID',
-            'diagnosis',
-            'radius_mean',
-            'radius_std',
-            'radius_worst',
-            'texture_mean',
-            'texture_std',
-            'texture_worst',
-            'perimeter_mean',
-            'perimeter_std',
-            'perimeter_worst',
-            'area_mean',
-            'area_std',
-            'area_worst',
-            'smoothness_mean',
-            'smoothness_std',
-            'smoothness_worst',
-            'compactness_mean',
-            'compactness_std',
-            'compactness_worst',
-            'concavity_mean',
-            'concavity_std',
-            'concavity_worst',
-            'concave_pts_mean',
-            'concave_pts_std',
-            'concave_pts_worst',
-            'symmetry_mean',
-            'symmetry_std',
-            'symmetry_worst',
-            'fractal_dim_mean',
-            'fractal_dim_std',
-            'fractal_dim_worst',
-        ]
-        data = label_data(data, labels)
+
+        # label the data
+        data = label_data(data)
 
         # Identify features, drop ID column
         data_noid = data.drop(columns=['ID'])

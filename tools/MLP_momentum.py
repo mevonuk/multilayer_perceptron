@@ -6,9 +6,9 @@ from .math_tools import my_metrics, my_abs, binary_cross_entropy
 from .plot_loss import plot_metrics
 
 
-class MLP:
+class MLP_momentum:
     """multilayer perceptron class with 2 hidden layers
-    using gradient descent"""
+    using Nesterov momentum as the optimizer"""
     def __init__(self, input_size, hidden_size, output_size):
         """randomly initializes weights between 4 layers:
         input to hidden1,
@@ -22,9 +22,20 @@ class MLP:
         self.bias_hidden2 = np.zeros((1, hidden_size))
         self.bias_output = np.zeros((1, output_size))
         self.hidden_size = hidden_size
-        # set mu and sigma to default values
+        # set mu and sigma initially to None
         self.mu = None
         self.sigma = None
+
+        # variables for Nesterov momentum
+        self.v_wih1 = np.zeros_like(self.weights_input_hidden1)
+        self.v_wh1h2 = np.zeros_like(self.weights_hidden1_hidden2)
+        self.v_wh2o = np.zeros_like(self.weights_hidden2_output)
+
+        self.v_bh1 = np.zeros_like(self.bias_hidden1)
+        self.v_bh2 = np.zeros_like(self.bias_hidden2)
+        self.v_bo = np.zeros_like(self.bias_output)
+
+        self.momentum = 0.9
 
     def normalize_data(self, X, set_norm=False):
         """normalize the dataset"""
@@ -60,29 +71,80 @@ class MLP:
         self.final_output = self.sigmoid(self.final_input)
         return self.final_output
 
+    def nesterov_update(self, param, grad, velocity, lr):
+        v_prev = velocity.copy()
+
+        velocity[:] = self.momentum * velocity - lr * grad
+
+        param += (
+            -self.momentum * v_prev
+            + (1 + self.momentum) * velocity
+        )
+
     def backward(self, X, y, output, learning_rate):
-        """backward propagation: simple gradient descent by default"""
+        """backward propagation: Nesterov momentum"""
         # calculate the errors for each layer
         output_error = output - y
         hidden2_error = np.dot(output_error, self.weights_hidden2_output.T) * self.hidden2_output * (1 - self.hidden2_output)
         hidden1_error = np.dot(hidden2_error, self.weights_hidden1_hidden2.T) * self.hidden1_output * (1 - self.hidden1_output)
 
-        # update the weights and biases from the second layer to the ouput layer
-        self.weights_hidden2_output -= learning_rate * np.dot(self.hidden2_output.T, output_error)
-        self.bias_output -= learning_rate * np.sum(output_error, axis=0, keepdims=True)
+        # compute gradients
+        grad_wh2o = np.dot(self.hidden2_output.T, output_error)
+        grad_bo = np.sum(output_error, axis=0, keepdims=True)
 
-        # update the weights and bias between the two hidden layers
-        self.weights_hidden1_hidden2 -= learning_rate * np.dot(self.hidden1_output.T, hidden2_error)
-        self.bias_hidden2 -= learning_rate * np.sum(hidden2_error, axis=0, keepdims=True)
+        grad_wh1h2 = np.dot(self.hidden1_output.T, hidden2_error)
+        grad_bh2 = np.sum(hidden2_error, axis=0, keepdims=True)
 
-        # update the weights and bias for the input to the first hidden layer
-        self.weights_input_hidden1 -= learning_rate * np.dot(X.T, hidden1_error)
-        self.bias_hidden1 -= learning_rate * np.sum(hidden1_error, axis=0, keepdims=True)
+        grad_wih1 = np.dot(X.T, hidden1_error)
+        grad_bh1 = np.sum(hidden1_error, axis=0, keepdims=True)
+
+        # update weights and biases
+        self.nesterov_update(
+            self.weights_hidden2_output,
+            grad_wh2o,
+            self.v_wh2o,
+            learning_rate
+        )
+
+        self.nesterov_update(
+            self.bias_output,
+            grad_bo,
+            self.v_bo,
+            learning_rate
+        )
+
+        self.nesterov_update(
+            self.weights_hidden1_hidden2,
+            grad_wh1h2,
+            self.v_wh1h2,
+            learning_rate
+        )
+
+        self.nesterov_update(
+            self.bias_hidden2,
+            grad_bh2,
+            self.v_bh2,
+            learning_rate
+        )
+
+        self.nesterov_update(
+            self.weights_input_hidden1,
+            grad_wih1,
+            self.v_wih1,
+            learning_rate
+        )
+
+        self.nesterov_update(
+            self.bias_hidden1,
+            grad_bh1,
+            self.v_bh1,
+            learning_rate
+        )
 
     def train_with_validation(
             self, X_train, y_train,
             X_val, y_val,
-            epochs, learning_rate, stop_pt=5e-4):
+            epochs, learning_rate):
         """Train model while tracking performance on validation set"""
         # set up arrays to track progress with each iteration
         training_loss = []
@@ -92,7 +154,11 @@ class MLP:
         training_F1 = []
         training_precision = []
         training_recall = []
-        prev_loss = None
+        
+        best_val_loss = float('inf')
+        patience_counter = 0
+        patience = 10
+
         for epoch in range(epochs):
 
             # train the model:
@@ -136,11 +202,21 @@ class MLP:
                 print(f'F1:        training: {t_F1:.4f}, validation: {v_F1:.4f}')
 
             # Early stopping if loss stabilizes
-            if prev_loss is not None and my_abs(prev_loss - loss) <= stop_pt:
-                break
-            prev_loss = loss
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                patience_counter = 0
 
-        # plot curves
+                # Save best weights
+                self.save_weights()
+            else:
+                patience_counter += 1
+            if patience_counter >= patience:
+                break
+
+        # load best weights
+        self.load_weights()
+
+        # plot three metric curves
         plot_metrics(
             acc, training_precision,
             training_recall, training_F1,
