@@ -13,7 +13,7 @@ Introduction to artificial neural networks implementing a multilayer perceptron 
 
 ## Multilayer perceptron (MLP) Concepts
 
-Type of feed forward nueral network with fully connected neurons with non linear activation functions, such as sigmoid, hyperbolic tangent, or rectified linear unit (ReLU). The network is organized in layers with one or more hidden layers between the input and output layers. A perceptron has multiple weighted input connections, an activation function, and a single output. The ouput is obtained by calculating the weighted sum of the inputs (the outputs of the previous layer) and applying the activation function on the weighted sum. The ouput of the activation function is the threshold above which the neuron is activated.
+MLP is a type of feed forward nueral network with fully connected neurons with non-linear activation functions, such as sigmoid, hyperbolic tangent, or rectified linear unit (ReLU). The network is organized into layers with one or more hidden layers between the input and output layers. A perceptron has multiple weighted input connections, an activation function, and a single output. The ouput is obtained by calculating the weighted sum of the inputs (the outputs of the previous layer) and applying the activation function on the weighted sum. The ouput of the activation function is the threshold above which the neuron is activated.
 
 ### Feedforward
 
@@ -59,7 +59,7 @@ Class distribution: 357 benign, 212 malignant
 
 Data columns are labeled accordingly and scatterplots of the different feature combinations are made.
 
-Scatterplots and pairplots of the mean feature values reveal that the benign and malignant classes are best differentiated for:
+Pairplots of the mean feature values reveal that the benign and malignant classes are best differentiated for:
 - 'radius_mean',
 - 'texture_mean',
 - 'perimeter_mean',
@@ -74,6 +74,12 @@ Scatterplots and pairplots of the mean feature values reveal that the benign and
 - 'concave_pts_worst',  # good
 - 'symmetry_worst',  # good
 with the other features showing some overlap.
+
+To view the pairplots run:
+- python plotter.py --subset worst
+
+Choices for subset are mean, std, and worst.
+
 
 ### One-hot coding and feature normalization
 

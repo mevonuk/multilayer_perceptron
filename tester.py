@@ -1,6 +1,7 @@
 from tools.load_data import load
 from tools.split import split_data
 from tools.preprocessing import hot_code, label_data
+from tools.preprocessing import get_mean_std
 from plotting.pairplot import pairplotter
 from tools.plot_loss import plot2
 from tools.math_tools import my_metrics, binary_cross_entropy
@@ -15,7 +16,7 @@ def main():
     """Based on selected mode:
     pre_process: cleans data and splits it into training and testing sets;
     train: trains the MLP model on the training data;
-    predict: predicts the oucome of the test data and provides accuracy;
+    predict: predicts the oucome of the test data and provides the accuracy;
     all: does all three in one go"""
     parser = argparse.ArgumentParser(description="process, train, predict MLP model")
 

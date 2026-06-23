@@ -1,10 +1,24 @@
 from tools.load_data import load
 from tools.preprocessing import label_data
 from plotting.pairplot import pairplotter
+import argparse
 
 
 def main():
     """Loads data, plots pairplot of chosen features"""
+    parser = argparse.ArgumentParser(description="display pairplots of data")
+
+    parser.add_argument(
+        "--subset",
+        type=str,
+        default="mean",
+        choices=["mean", "std", "worst"],
+        help="Subset of data"
+    )
+
+    args = parser.parse_args()
+
+    subset = args.subset
 
     data = None
     try:
@@ -92,7 +106,10 @@ def main():
         ]
 
         # Build pairplot for all features
-        pairplotter(data, worst_features, 'diagnosis', save_fig=False)
+        plot_features = mean_features
+        if subset == 'worst': plot_features = worst_features
+        if subset == 'std': plot_features = std_features
+        pairplotter(data, plot_features, 'diagnosis', save_fig=0)
 
     except (TypeError, Exception, KeyboardInterrupt) as e:
         print(e)
