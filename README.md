@@ -126,6 +126,13 @@ The main program can be run in different program modes: pre_process; train; pred
 - gives final metrics for the final prediction
 
 
+## Optimizer
+
+The default optimizer is gradient descent ("gd"). Also available is Nesterov momentum ("nest"). The two optimizers return results with the same accuracy but with higher precision and lower recall and F1 for the default method.
+
+Nesterov momentum adds a momentum term to the update rule of the gradient descent to mitigate problems with oscillation, where the momentum term is a weighted average of the past gradients with the weighting decreasing exponentially as gradients get further away in time.
+
+
 Next:
 - A more complex optimization function (for example: Nesterov momentum,
 RMSprop, Adam, ...).

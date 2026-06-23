@@ -6,6 +6,7 @@ from plotting.pairplot import pairplotter
 from tools.plot_loss import plot2
 from tools.math_tools import my_metrics, binary_cross_entropy
 from tools.MLP import MLP
+from tools.MLP_momentum import MLP_momentum
 import argparse
 import pickle
 import sys
@@ -64,6 +65,14 @@ def main():
         help="Verbose mode"
     )
 
+    parser.add_argument(
+        "--optimizer",
+        type=str,
+        default="gd",
+        choices=["gd", "nest"],
+        help="Type of optimizer"
+    )
+
     args = parser.parse_args()
 
     program_mode = args.program_mode
@@ -72,6 +81,7 @@ def main():
     learn_rate = args.learn_rate
     split_size = args.split_size
     verbose = args.verbose
+    optimizer = args.optimizer
 
     print("Running program in program mode:", program_mode)
     if program_mode in ["train", "predict", "all"]:
@@ -135,10 +145,11 @@ def main():
         print("Learning rate:", learn_rate)
 
         try:
-            print("initializing and training MLP model...")
+            print("initializing and training MLP model using", optimizer, "...")
 
             # make the MLP specifying size of hidden and output layers
             mp_test = MLP(X_train.shape[1], hidden_size, 1)
+            # mp_test = MLP_momentum(X_train.shape[1], hidden_size, 1, optimizer)
 
             # feature normalization
             print("Normalizing training set...")
@@ -178,6 +189,7 @@ def main():
         try:
             # make the MLP specifying size of hidden and output layers
             mp_test = MLP(X_test.shape[1], hidden_size, 1)
+            # mp_test = MLP_momentum(X_test.shape[1], hidden_size, 1, optimizer)
 
             # load weights
             print("Loading saved weights...")

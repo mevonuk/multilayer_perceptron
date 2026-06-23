@@ -177,7 +177,7 @@ class MLP:
         }
         with open(file_name, "wb") as f:
             pickle.dump(model_data, f)
-        print("Model weights saved to", file_name)
+
 
     def load_weights(self, file_name='trained_weights.pkl'):
         """Load pickle file"""
@@ -206,5 +206,3 @@ class MLP:
         self.bias_output = model_data['bias_output']
         self.mu = model_data['mu']
         self.sigma = model_data['sigma']
-
-        print("Model weights loaded from", file_name)

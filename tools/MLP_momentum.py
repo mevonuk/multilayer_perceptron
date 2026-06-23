@@ -9,12 +9,14 @@ from .plot_loss import plot_metrics
 class MLP_momentum:
     """multilayer perceptron class with 2 hidden layers
     using Nesterov momentum as the optimizer"""
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size, output_size, optimizer='gd'):
         """randomly initializes weights between 4 layers:
         input to hidden1,
         hidden1 to hidden2,
         hidden2 to output
         and sets biases to zero"""
+
+        # initialize weights and biases
         self.weights_input_hidden1 = np.random.randn(input_size, hidden_size) * np.sqrt(1/input_size)
         self.weights_hidden1_hidden2 = np.random.randn(hidden_size, hidden_size) * np.sqrt(1/hidden_size)
         self.weights_hidden2_output = np.random.randn(hidden_size, output_size) * np.sqrt(1/hidden_size)
@@ -22,6 +24,10 @@ class MLP_momentum:
         self.bias_hidden2 = np.zeros((1, hidden_size))
         self.bias_output = np.zeros((1, output_size))
         self.hidden_size = hidden_size
+
+        # set optimizer
+        self.optimizer = optimizer
+
         # set mu and sigma initially to None
         self.mu = None
         self.sigma = None
@@ -37,6 +43,7 @@ class MLP_momentum:
 
         self.momentum = 0.9
 
+
     def normalize_data(self, X, set_norm=False):
         """normalize the dataset"""
         features = X.columns
@@ -49,10 +56,12 @@ class MLP_momentum:
         X_scaled[features] = (X_scaled[features] - self.mu) / self.sigma
         return X_scaled
 
+
     def sigmoid(self, x):
         """sigmoid function"""
         x = np.clip(x, -500, 500)
         return 1 / (1 + np.exp(-x))
+
 
     def forward(self, X):
         """forward propagation"""
@@ -71,7 +80,24 @@ class MLP_momentum:
         self.final_output = self.sigmoid(self.final_input)
         return self.final_output
 
+
+    def gd_grad(self, X, learning_rate, output_error, hidden1_error, hidden2_error):
+        """does the backward propogation using the basic gradient descent method"""
+        # update the weights and biases from the second layer to the ouput layer
+        self.weights_hidden2_output -= learning_rate * np.dot(self.hidden2_output.T, output_error)
+        self.bias_output -= learning_rate * np.sum(output_error, axis=0, keepdims=True)
+
+        # update the weights and bias between the two hidden layers
+        self.weights_hidden1_hidden2 -= learning_rate * np.dot(self.hidden1_output.T, hidden2_error)
+        self.bias_hidden2 -= learning_rate * np.sum(hidden2_error, axis=0, keepdims=True)
+
+        # update the weights and bias for the input to the first hidden layer
+        self.weights_input_hidden1 -= learning_rate * np.dot(X.T, hidden1_error)
+        self.bias_hidden1 -= learning_rate * np.sum(hidden1_error, axis=0, keepdims=True)
+
+
     def nesterov_update(self, param, grad, velocity, lr):
+        """Helper for the Nesterov momentum method"""
         v_prev = velocity.copy()
 
         velocity[:] = self.momentum * velocity - lr * grad
@@ -81,13 +107,9 @@ class MLP_momentum:
             + (1 + self.momentum) * velocity
         )
 
-    def backward(self, X, y, output, learning_rate):
-        """backward propagation: Nesterov momentum"""
-        # calculate the errors for each layer
-        output_error = output - y
-        hidden2_error = np.dot(output_error, self.weights_hidden2_output.T) * self.hidden2_output * (1 - self.hidden2_output)
-        hidden1_error = np.dot(hidden2_error, self.weights_hidden1_hidden2.T) * self.hidden1_output * (1 - self.hidden1_output)
 
+    def nesterov_grad(self, X, learning_rate, output_error, hidden1_error, hidden2_error):
+        """does the backward propogation using the Nesterov momentum method"""
         # compute gradients
         grad_wh2o = np.dot(self.hidden2_output.T, output_error)
         grad_bo = np.sum(output_error, axis=0, keepdims=True)
@@ -140,6 +162,18 @@ class MLP_momentum:
             self.v_bh1,
             learning_rate
         )
+
+
+    def backward(self, X, y, output, learning_rate):
+        """backward propagation"""
+        # calculate the errors for each layer
+        output_error = output - y
+        hidden2_error = np.dot(output_error, self.weights_hidden2_output.T) * self.hidden2_output * (1 - self.hidden2_output)
+        hidden1_error = np.dot(hidden2_error, self.weights_hidden1_hidden2.T) * self.hidden1_output * (1 - self.hidden1_output)
+
+        if self.optimizer == 'gd': self.gd_grad(X, learning_rate, output_error, hidden1_error, hidden2_error)
+        if self.optimizer == 'nest': self.nesterov_grad(X, learning_rate, output_error, hidden1_error, hidden2_error)
+
 
     def train_with_validation(
             self, X_train, y_train,
@@ -225,17 +259,20 @@ class MLP_momentum:
         # return histories of the loss and accuracy
         return training_loss, validation_loss, acc, acc_val
 
+
     def make_prediction(self, X):
         """make a prediction"""
         output = self.forward(X)
         return (output > 0.5).astype(int)
     
+
     def predict(self, X):
         """make a prediction"""
         # first scale test data in same way train data was scaled to match weights and biases
         X_scaled = self.normalize_data(X, set_norm=False)
         # return prediction and probability based on scaled data
         return self.make_prediction(X_scaled), self.forward(X_scaled)
+
 
     def save_weights(self, file_name='trained_weights.pkl'):
         """Save everything to a pickle file"""
@@ -253,7 +290,7 @@ class MLP_momentum:
         }
         with open(file_name, "wb") as f:
             pickle.dump(model_data, f)
-        print("Model weights saved to", file_name)
+
 
     def load_weights(self, file_name='trained_weights.pkl'):
         """Load pickle file"""
@@ -282,5 +319,3 @@ class MLP_momentum:
         self.bias_output = model_data['bias_output']
         self.mu = model_data['mu']
         self.sigma = model_data['sigma']
-
-        print("Model weights loaded from", file_name)
