@@ -40,7 +40,7 @@ def predicting(optimizer, verbose):
             accuracy_adam, precision_adam, recall_adam, F1_adam, loss_adam = predict(
                  'adam', X_test, y_test, verbose)
 
-            print("Comparison of predictions")
+            print("\nComparison of predictions")
             print("               GD    Nest    Adam")
             print(f'Accuracy:  {accuracy_gd:.4f}  {accuracy_nest:.4f}  {accuracy_adam:.4f}')
             print(f'Precision: {precision_gd:.4f}  {precision_nest:.4f}  {precision_adam:.4f}')

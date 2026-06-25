@@ -37,14 +37,14 @@ def main():
     parser.add_argument(
         "--max_epochs",
         type=int,
-        default=10000,
+        default=100000,
         help="Maximum number of Epochs"
     )
 
     parser.add_argument(
         "--learn_rate",
         type=float,
-        default=0.001,
+        default=0.01,
         help="Learning rate"
     )
 
@@ -77,7 +77,7 @@ def main():
     print("Running program in program mode:", program_mode)
     
     if program_mode == "pre_process":
-        preprocess(split_size)
+        preprocess(split_size, verbose)
 
     elif program_mode == "train":
         training(max_epochs, learn_rate, optimizer, hidden_size, verbose)
@@ -86,7 +86,7 @@ def main():
         predicting(optimizer, verbose)
 
     else:
-        preprocess(split_size)
+        preprocess(split_size, verbose)
         training(max_epochs, learn_rate, optimizer, hidden_size, verbose)
         predicting(optimizer, verbose)
 

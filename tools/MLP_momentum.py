@@ -106,20 +106,19 @@ class MLP_momentum:
         self.final_output = self.sigmoid(self.final_input)
         return self.final_output
 
-
-    def gd_grad(self, X, learning_rate, output_error, hidden1_error, hidden2_error):
+    def gd_grad(self, learning_rate, grad_wh2o, grad_bo, grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
         """does the backward propogation using the basic gradient descent method"""
         # update the weights and biases from the second layer to the ouput layer
-        self.weights_hidden2_output -= learning_rate * np.dot(self.hidden2_output.T, output_error)
-        self.bias_output -= learning_rate * np.sum(output_error, axis=0, keepdims=True)
+        self.weights_hidden2_output -= learning_rate * grad_wh2o
+        self.bias_output -= learning_rate * grad_bo
 
         # update the weights and bias between the two hidden layers
-        self.weights_hidden1_hidden2 -= learning_rate * np.dot(self.hidden1_output.T, hidden2_error)
-        self.bias_hidden2 -= learning_rate * np.sum(hidden2_error, axis=0, keepdims=True)
+        self.weights_hidden1_hidden2 -= learning_rate * grad_wh1h2
+        self.bias_hidden2 -= learning_rate * grad_bh2
 
         # update the weights and bias for the input to the first hidden layer
-        self.weights_input_hidden1 -= learning_rate * np.dot(X.T, hidden1_error)
-        self.bias_hidden1 -= learning_rate * np.sum(hidden1_error, axis=0, keepdims=True)
+        self.weights_input_hidden1 -= learning_rate * grad_wih1
+        self.bias_hidden1 -= learning_rate * grad_bh1
 
 
     def nesterov_update(self, param, grad, velocity, lr):
@@ -133,19 +132,8 @@ class MLP_momentum:
             + (1 + self.momentum) * velocity
         )
 
-
-    def nesterov_grad(self, X, learning_rate, output_error, hidden1_error, hidden2_error):
+    def nesterov_grad(self, learning_rate, grad_wh2o, grad_bo, grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
         """does the backward propogation using the Nesterov momentum method"""
-        # compute gradients
-        grad_wh2o = np.dot(self.hidden2_output.T, output_error)
-        grad_bo = np.sum(output_error, axis=0, keepdims=True)
-
-        grad_wh1h2 = np.dot(self.hidden1_output.T, hidden2_error)
-        grad_bh2 = np.sum(hidden2_error, axis=0, keepdims=True)
-
-        grad_wih1 = np.dot(X.T, hidden1_error)
-        grad_bh1 = np.sum(hidden1_error, axis=0, keepdims=True)
-
         # update weights and biases
         self.nesterov_update(
             self.weights_hidden2_output,
@@ -204,22 +192,14 @@ class MLP_momentum:
         param -= lr * m_hat / (np.sqrt(v_hat) + self.epsilon)
 
 
-    def adam_grad(self, X, learning_rate,
-                output_error,
-                hidden1_error,
-                hidden2_error):
+    # def adam_grad(self, X, learning_rate,
+    #             output_error,
+    #             hidden1_error,
+    #             hidden2_error):
+
+    def adam_grad(self, learning_rate, grad_wh2o, grad_bo, grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
 
         self.t += 1
-
-        # gradients
-        grad_wh2o = np.dot(self.hidden2_output.T, output_error)
-        grad_bo = np.sum(output_error, axis=0, keepdims=True)
-
-        grad_wh1h2 = np.dot(self.hidden1_output.T, hidden2_error)
-        grad_bh2 = np.sum(hidden2_error, axis=0, keepdims=True)
-
-        grad_wih1 = np.dot(X.T, hidden1_error)
-        grad_bh1 = np.sum(hidden1_error, axis=0, keepdims=True)
 
         # updates
         self.adam_update(
@@ -278,29 +258,37 @@ class MLP_momentum:
         hidden2_error = np.dot(output_error, self.weights_hidden2_output.T) * self.hidden2_output * (1 - self.hidden2_output)
         hidden1_error = np.dot(hidden2_error, self.weights_hidden1_hidden2.T) * self.hidden1_output * (1 - self.hidden1_output)
 
+        m = X.shape[0]
+        # calculate gradients scaled to "batch size"
+        grad_wh2o = np.dot(self.hidden2_output.T, output_error) / m
+        grad_bo = np.sum(output_error, axis=0, keepdims=True) / m
+
+        grad_wh1h2 = np.dot(self.hidden1_output.T, hidden2_error) / m
+        grad_bh2 = np.sum(hidden2_error, axis=0, keepdims=True) / m
+
+        grad_wih1 = np.dot(X.T, hidden1_error) / m
+        grad_bh1 = np.sum(hidden1_error, axis=0, keepdims=True) / m
+
         if self.optimizer == 'gd':
             self.gd_grad(
-                X, learning_rate,
-                output_error,
-                hidden1_error,
-                hidden2_error
-            )
+                learning_rate,
+                grad_wh2o, grad_bo,
+                grad_wh1h2, grad_bh2,
+                grad_wih1, grad_bh1)
 
         elif self.optimizer == 'nest':
             self.nesterov_grad(
-                X, learning_rate,
-                output_error,
-                hidden1_error,
-                hidden2_error
-            )
+                learning_rate,
+                grad_wh2o, grad_bo,
+                grad_wh1h2, grad_bh2,
+                grad_wih1, grad_bh1)
 
         elif self.optimizer == 'adam':
             self.adam_grad(
-                X, learning_rate,
-                output_error,
-                hidden1_error,
-                hidden2_error
-            )
+                learning_rate,
+                grad_wh2o, grad_bo,
+                grad_wh1h2, grad_bh2,
+                grad_wih1, grad_bh1)
 
     def train_with_validation(
             self, X_train, y_train,
@@ -318,7 +306,7 @@ class MLP_momentum:
         
         best_val_loss = float('inf')
         patience_counter = 0
-        patience = 20
+        patience = 40
         min_delta = 1e-4
 
         for epoch in range(epochs):
@@ -364,8 +352,8 @@ class MLP_momentum:
                 print(f'F1:        training: {t_F1:.4f}, validation: {v_F1:.4f}')
 
             # Early stopping if validation loss stabilizes
-            if val_loss < best_val_loss:
-            # if val_loss < best_val_loss - min_delta:
+            # if val_loss < best_val_loss:
+            if val_loss < best_val_loss - min_delta:
                 best_val_loss = val_loss
                 
                 patience_counter = 0

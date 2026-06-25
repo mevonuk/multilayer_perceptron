@@ -46,7 +46,7 @@ def training(max_epochs, learn_rate, optimizer, hidden_size, verbose):
         # make the MLP specifying size of hidden and output layers
         if optimizer in ['gd', 'nest', 'adam']:
 
-            print("initializing and training MLP model using", optimizer, "...")
+            print("\nInitializing and training MLP model using", optimizer, "...")
 
             train_loss, val_loss, train_acc, val_acc = train_model(
                 max_epochs, learn_rate, optimizer, hidden_size, 1)
@@ -56,15 +56,15 @@ def training(max_epochs, learn_rate, optimizer, hidden_size, verbose):
 
         else:
 
-            print("initializing and training MLP models for comparison...")
+            print("\nInitializing and training MLP models for comparison...")
 
-            print("\ngradient descent")
+            print("\nGradient descent...")
             train_loss_gd, val_loss_gd, train_acc_gd, val_acc_gd = train_model(
                 max_epochs, learn_rate, 'gd', hidden_size, 0)
-            print("\nNesterov momentum")
+            print("\nNesterov momentum...")
             train_loss_nest, val_loss_nest, train_acc_nest, val_acc_nest = train_model(
                 max_epochs, learn_rate, 'nest', hidden_size, 0)
-            print("\nAdam")
+            print("\nAdam...")
             train_loss_adam, val_loss_adam, train_acc_adam, val_acc_adam = train_model(
                 max_epochs, learn_rate, 'adam', hidden_size, 0)
             
@@ -76,6 +76,3 @@ def training(max_epochs, learn_rate, optimizer, hidden_size, verbose):
 
     except (TypeError, Exception, KeyboardInterrupt) as e:
         print(e)
-
-
-
