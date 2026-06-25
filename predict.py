@@ -39,14 +39,16 @@ def predicting(optimizer, verbose):
                  'nest', X_test, y_test, verbose)
             accuracy_adam, precision_adam, recall_adam, F1_adam, loss_adam = predict(
                  'adam', X_test, y_test, verbose)
+            accuracy_rms, precision_rms, recall_rms, F1_rms, loss_rms = predict(
+                 'rms', X_test, y_test, verbose)
 
             print("\nComparison of predictions")
-            print("               GD    Nest    Adam")
-            print(f'Accuracy:  {accuracy_gd:.4f}  {accuracy_nest:.4f}  {accuracy_adam:.4f}')
-            print(f'Precision: {precision_gd:.4f}  {precision_nest:.4f}  {precision_adam:.4f}')
-            print(f'Recall:    {recall_gd:.4f}  {recall_nest:.4f}  {recall_adam:.4f}')
-            print(f'F1:        {F1_gd:.4f}  {F1_nest:.4f}  {F1_adam:.4f}')
-            print(f'Loss:      {loss_gd:.4f}  {loss_nest:.4f}  {loss_adam:.4f}')
+            print("               GD     Nest     Adam  RMSprop")
+            print(f'Accuracy:  {accuracy_gd:.4f}   {accuracy_nest:.4f}   {accuracy_adam:.4f}   {accuracy_rms:.4f}')
+            print(f'Precision: {precision_gd:.4f}   {precision_nest:.4f}   {precision_adam:.4f}   {precision_rms:.4f}')
+            print(f'Recall:    {recall_gd:.4f}   {recall_nest:.4f}   {recall_adam:.4f}   {recall_rms:.4f}')
+            print(f'F1:        {F1_gd:.4f}   {F1_nest:.4f}   {F1_adam:.4f}   {F1_rms:.4f}')
+            print(f'Loss:      {loss_gd:.4f}   {loss_nest:.4f}   {loss_adam:.4f}   {loss_rms:.4f}')
             
         else:
             accuracy, precision, recall, F1, loss = predict(

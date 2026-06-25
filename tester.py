@@ -42,10 +42,10 @@ def main():
     )
 
     parser.add_argument(
-        "--learn_rate",
+        "--learn_factor",
         type=float,
-        default=0.01,
-        help="Learning rate"
+        default=1.0,
+        help="Learning rate factor: multiple of default learning rate for an optimizer"
     )
 
     parser.add_argument(
@@ -60,7 +60,7 @@ def main():
         "--optimizer",
         type=str,
         default="gd",
-        choices=["gd", "nest", "adam", "compare"],
+        choices=["gd", "nest", "adam", "rms", "compare"],
         help="Type of optimizer"
     )
 
@@ -69,7 +69,7 @@ def main():
     program_mode = args.program_mode
     hidden_size = args.hidden_size
     max_epochs = args.max_epochs
-    learn_rate = args.learn_rate
+    learn_factor = args.learn_factor
     split_size = args.split_size
     verbose = args.verbose
     optimizer = args.optimizer
@@ -80,14 +80,14 @@ def main():
         preprocess(split_size, verbose)
 
     elif program_mode == "train":
-        training(max_epochs, learn_rate, optimizer, hidden_size, verbose)
+        training(max_epochs, learn_factor, optimizer, hidden_size, verbose)
 
     elif program_mode == "predict":
         predicting(optimizer, verbose)
 
     else:
         preprocess(split_size, verbose)
-        training(max_epochs, learn_rate, optimizer, hidden_size, verbose)
+        training(max_epochs, learn_factor, optimizer, hidden_size, verbose)
         predicting(optimizer, verbose)
 
 

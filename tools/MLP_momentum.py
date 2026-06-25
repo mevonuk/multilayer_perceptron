@@ -69,6 +69,19 @@ class MLP_momentum:
         self.s_bh2 = np.zeros_like(self.bias_hidden2)
         self.s_bo = np.zeros_like(self.bias_output)
 
+        # RMSprop hyperparameters
+        self.rms_beta = 0.9
+        self.epsilon = 1e-8
+
+        # Running squared-gradient averages
+        self.rms_wih1 = np.zeros_like(self.weights_input_hidden1)
+        self.rms_wh1h2 = np.zeros_like(self.weights_hidden1_hidden2)
+        self.rms_wh2o = np.zeros_like(self.weights_hidden2_output)
+
+        self.rms_bh1 = np.zeros_like(self.bias_hidden1)
+        self.rms_bh2 = np.zeros_like(self.bias_hidden2)
+        self.rms_bo = np.zeros_like(self.bias_output)
+
 
     def normalize_data(self, X, set_norm=False):
         """normalize the dataset"""
@@ -192,11 +205,6 @@ class MLP_momentum:
         param -= lr * m_hat / (np.sqrt(v_hat) + self.epsilon)
 
 
-    # def adam_grad(self, X, learning_rate,
-    #             output_error,
-    #             hidden1_error,
-    #             hidden2_error):
-
     def adam_grad(self, learning_rate, grad_wh2o, grad_bo, grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
 
         self.t += 1
@@ -251,6 +259,70 @@ class MLP_momentum:
         )
 
 
+    def rmsprop_update(self, param, grad, cache, lr):
+        """RMSprop parameter update"""
+
+        cache[:] = (
+            self.rms_beta * cache
+            + (1 - self.rms_beta) * grad**2
+        )
+
+        param -= (
+            lr * grad
+            / (np.sqrt(cache) + self.epsilon)
+        )
+
+
+    def rmsprop_grad(
+            self,
+            learning_rate,
+            grad_wh2o, grad_bo,
+            grad_wh1h2, grad_bh2,
+            grad_wih1, grad_bh1):
+
+        self.rmsprop_update(
+            self.weights_hidden2_output,
+            grad_wh2o,
+            self.rms_wh2o,
+            learning_rate
+        )
+
+        self.rmsprop_update(
+            self.bias_output,
+            grad_bo,
+            self.rms_bo,
+            learning_rate
+        )
+
+        self.rmsprop_update(
+            self.weights_hidden1_hidden2,
+            grad_wh1h2,
+            self.rms_wh1h2,
+            learning_rate
+        )
+
+        self.rmsprop_update(
+            self.bias_hidden2,
+            grad_bh2,
+            self.rms_bh2,
+            learning_rate
+        )
+
+        self.rmsprop_update(
+            self.weights_input_hidden1,
+            grad_wih1,
+            self.rms_wih1,
+            learning_rate
+        )
+
+        self.rmsprop_update(
+            self.bias_hidden1,
+            grad_bh1,
+            self.rms_bh1,
+            learning_rate
+        )
+
+
     def backward(self, X, y, output, learning_rate):
         """backward propagation"""
         # calculate the errors for each layer
@@ -289,6 +361,14 @@ class MLP_momentum:
                 grad_wh2o, grad_bo,
                 grad_wh1h2, grad_bh2,
                 grad_wih1, grad_bh1)
+
+        elif self.optimizer == 'rms':
+            self.rmsprop_grad(
+                learning_rate,
+                grad_wh2o, grad_bo,
+                grad_wh1h2, grad_bh2,
+                grad_wih1, grad_bh1)
+
 
     def train_with_validation(
             self, X_train, y_train,
