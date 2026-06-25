@@ -2,19 +2,21 @@ import sys
 import numpy as np
 import pickle
 from .preprocessing import get_mean_std
-from .math_tools import my_metrics, my_abs, binary_cross_entropy
-from .plot_loss import plot_metrics
+from .math_tools import my_metrics, binary_cross_entropy
 
 
 class MLP_momentum:
     """multilayer perceptron class with 2 hidden layers
     using Nesterov momentum as the optimizer"""
-    def __init__(self, input_size, hidden_size, output_size, optimizer='gd'):
+    def __init__(self, input_size, hidden_size=10, output_size=1, optimizer='gd'):
         """randomly initializes weights between 4 layers:
         input to hidden1,
         hidden1 to hidden2,
         hidden2 to output
         and sets biases to zero"""
+
+        # set seed for repeatability
+        np.random.seed(42)
 
         # initialize weights and biases
         self.weights_input_hidden1 = np.random.randn(input_size, hidden_size) * np.sqrt(1/input_size)
@@ -42,6 +44,30 @@ class MLP_momentum:
         self.v_bo = np.zeros_like(self.bias_output)
 
         self.momentum = 0.9
+
+        # Adam parameters
+        self.beta1 = 0.9
+        self.beta2 = 0.999
+        self.epsilon = 1e-8
+        self.t = 0
+
+        # First moments
+        self.m_wih1 = np.zeros_like(self.weights_input_hidden1)
+        self.m_wh1h2 = np.zeros_like(self.weights_hidden1_hidden2)
+        self.m_wh2o = np.zeros_like(self.weights_hidden2_output)
+
+        self.m_bh1 = np.zeros_like(self.bias_hidden1)
+        self.m_bh2 = np.zeros_like(self.bias_hidden2)
+        self.m_bo = np.zeros_like(self.bias_output)
+
+        # Second moments
+        self.s_wih1 = np.zeros_like(self.weights_input_hidden1)
+        self.s_wh1h2 = np.zeros_like(self.weights_hidden1_hidden2)
+        self.s_wh2o = np.zeros_like(self.weights_hidden2_output)
+
+        self.s_bh1 = np.zeros_like(self.bias_hidden1)
+        self.s_bh2 = np.zeros_like(self.bias_hidden2)
+        self.s_bo = np.zeros_like(self.bias_output)
 
 
     def normalize_data(self, X, set_norm=False):
@@ -163,6 +189,87 @@ class MLP_momentum:
             learning_rate
         )
 
+    def adam_update(self, param, grad, m, v, lr):
+        """Adam optimizer update"""
+
+        # update biased moments
+        m[:] = self.beta1 * m + (1 - self.beta1) * grad
+        v[:] = self.beta2 * v + (1 - self.beta2) * (grad ** 2)
+
+        # bias correction
+        m_hat = m / (1 - self.beta1 ** self.t)
+        v_hat = v / (1 - self.beta2 ** self.t)
+
+        # parameter update
+        param -= lr * m_hat / (np.sqrt(v_hat) + self.epsilon)
+
+
+    def adam_grad(self, X, learning_rate,
+                output_error,
+                hidden1_error,
+                hidden2_error):
+
+        self.t += 1
+
+        # gradients
+        grad_wh2o = np.dot(self.hidden2_output.T, output_error)
+        grad_bo = np.sum(output_error, axis=0, keepdims=True)
+
+        grad_wh1h2 = np.dot(self.hidden1_output.T, hidden2_error)
+        grad_bh2 = np.sum(hidden2_error, axis=0, keepdims=True)
+
+        grad_wih1 = np.dot(X.T, hidden1_error)
+        grad_bh1 = np.sum(hidden1_error, axis=0, keepdims=True)
+
+        # updates
+        self.adam_update(
+            self.weights_hidden2_output,
+            grad_wh2o,
+            self.m_wh2o,
+            self.s_wh2o,
+            learning_rate
+        )
+
+        self.adam_update(
+            self.bias_output,
+            grad_bo,
+            self.m_bo,
+            self.s_bo,
+            learning_rate
+        )
+
+        self.adam_update(
+            self.weights_hidden1_hidden2,
+            grad_wh1h2,
+            self.m_wh1h2,
+            self.s_wh1h2,
+            learning_rate
+        )
+
+        self.adam_update(
+            self.bias_hidden2,
+            grad_bh2,
+            self.m_bh2,
+            self.s_bh2,
+            learning_rate
+        )
+
+        self.adam_update(
+            self.weights_input_hidden1,
+            grad_wih1,
+            self.m_wih1,
+            self.s_wih1,
+            learning_rate
+        )
+
+        self.adam_update(
+            self.bias_hidden1,
+            grad_bh1,
+            self.m_bh1,
+            self.s_bh1,
+            learning_rate
+        )
+
 
     def backward(self, X, y, output, learning_rate):
         """backward propagation"""
@@ -171,14 +278,34 @@ class MLP_momentum:
         hidden2_error = np.dot(output_error, self.weights_hidden2_output.T) * self.hidden2_output * (1 - self.hidden2_output)
         hidden1_error = np.dot(hidden2_error, self.weights_hidden1_hidden2.T) * self.hidden1_output * (1 - self.hidden1_output)
 
-        if self.optimizer == 'gd': self.gd_grad(X, learning_rate, output_error, hidden1_error, hidden2_error)
-        if self.optimizer == 'nest': self.nesterov_grad(X, learning_rate, output_error, hidden1_error, hidden2_error)
+        if self.optimizer == 'gd':
+            self.gd_grad(
+                X, learning_rate,
+                output_error,
+                hidden1_error,
+                hidden2_error
+            )
 
+        elif self.optimizer == 'nest':
+            self.nesterov_grad(
+                X, learning_rate,
+                output_error,
+                hidden1_error,
+                hidden2_error
+            )
+
+        elif self.optimizer == 'adam':
+            self.adam_grad(
+                X, learning_rate,
+                output_error,
+                hidden1_error,
+                hidden2_error
+            )
 
     def train_with_validation(
             self, X_train, y_train,
             X_val, y_val,
-            epochs, learning_rate):
+            epochs, learning_rate, v=1):
         """Train model while tracking performance on validation set"""
         # set up arrays to track progress with each iteration
         training_loss = []
@@ -191,7 +318,8 @@ class MLP_momentum:
         
         best_val_loss = float('inf')
         patience_counter = 0
-        patience = 10
+        patience = 20
+        min_delta = 1e-4
 
         for epoch in range(epochs):
 
@@ -227,7 +355,7 @@ class MLP_momentum:
             acc_val.append(v_acc)
 
             # periodically print the loss and accuracy
-            if (epoch + 1) % 10 == 0:
+            if v and ((epoch + 1) % 10 == 0):
                 print(f'Epoch {epoch+1}')
                 print(f'Loss:      training: {loss:.4f}, validation: {val_loss:.4f}')
                 print(f'Accuracy:  training: {t_acc:.4f}, validation: {v_acc:.4f}')
@@ -235,9 +363,11 @@ class MLP_momentum:
                 print(f'Recall:    training: {t_recall:.4f}, validation: {v_recall:.4f}')
                 print(f'F1:        training: {t_F1:.4f}, validation: {v_F1:.4f}')
 
-            # Early stopping if loss stabilizes
+            # Early stopping if validation loss stabilizes
             if val_loss < best_val_loss:
+            # if val_loss < best_val_loss - min_delta:
                 best_val_loss = val_loss
+                
                 patience_counter = 0
 
                 # Save best weights
@@ -250,11 +380,7 @@ class MLP_momentum:
         # load best weights
         self.load_weights()
 
-        # plot three metric curves
-        plot_metrics(
-            acc, training_precision,
-            training_recall, training_F1,
-            title="Training metrics")
+        print("total number of epochs run:", epoch)
 
         # return histories of the loss and accuracy
         return training_loss, validation_loss, acc, acc_val
@@ -274,7 +400,7 @@ class MLP_momentum:
         return self.make_prediction(X_scaled), self.forward(X_scaled)
 
 
-    def save_weights(self, file_name='trained_weights.pkl'):
+    def save_weights(self, file_name='trained_weights_'):
         """Save everything to a pickle file"""
 
         model_data = {
@@ -288,13 +414,13 @@ class MLP_momentum:
             'mu' : self.mu,
             'sigma' : self.sigma,
         }
-        with open(file_name, "wb") as f:
+        with open(file_name + self.optimizer + '.pkl', "wb") as f:
             pickle.dump(model_data, f)
 
 
-    def load_weights(self, file_name='trained_weights.pkl'):
+    def load_weights(self, file_name='trained_weights_'):
         """Load pickle file"""
-        with open(file_name, "rb") as f:
+        with open(file_name + self.optimizer + '.pkl', "rb") as f:
             try:
                 model_data = pickle.load(f)
             except (

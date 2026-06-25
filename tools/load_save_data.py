@@ -2,6 +2,7 @@
 import pandas as pd
 import os
 import pickle
+import sys
 
 
 def load(path: str) -> pd.core.frame.DataFrame:
@@ -34,9 +35,9 @@ def load(path: str) -> pd.core.frame.DataFrame:
     except UnicodeDecodeError:
         print("Encoding issue. Try a different encoding.")
         return None
+    
 
-
-def load_split_data(filename="split_datasets.pkl"):
+def load_split_data(data_type, filename="split_datasets.pkl"):
     with open(filename, "rb") as f:
         try:
             split_datasets = pickle.load(f)
@@ -50,12 +51,14 @@ def load_split_data(filename="split_datasets.pkl"):
             print(f"Error parsing pickle file: {e}.")
             sys.exit(1)
 
-    X_train = split_datasets['X_train']
-    X_test = split_datasets['X_test']
-    y_train = split_datasets['y_train']
-    y_test = split_datasets['y_test']
+    if data_type == 'test':
+        X = split_datasets['X_test']
+        y = split_datasets['y_test']
+    else:
+        X = split_datasets['X_train']
+        y = split_datasets['y_train']
 
-    return X_train, y_train, X_test, y_test
+    return X, y
 
 
 def save_split_data(X_train, y_train, X_test, y_test, filename="split_datasets.pkl"):

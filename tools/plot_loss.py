@@ -27,6 +27,23 @@ def plot2(training, validation, title):
     plt.show()
 
 
+def plot_compare(validation_gd, validation_adam, validation_nest, title):
+    """compare validation histories for different optimizers"""
+    plt.figure(figsize=(8, 5))
+
+    plt.plot(validation_gd, label="Gradient descent")
+    plt.plot(validation_nest, label="Nesterov momentum")
+    plt.plot(validation_adam, label="Adam")
+
+    plt.title(title + " vs Epoch")
+    plt.xlabel("Epoch")
+    plt.ylabel(title)
+    plt.grid(True)
+    plt.legend()
+
+    plt.show()
+
+
 def plot_metrics(accuracy, percision, recall, F1, title):
     """plot metrics history"""
     plt.figure(figsize=(8, 5))

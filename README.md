@@ -128,12 +128,46 @@ The main program can be run in different program modes: pre_process; train; pred
 
 ## Optimizer
 
-The default optimizer is gradient descent ("gd"). Also available is Nesterov momentum ("nest"). The two optimizers return results with the same accuracy but with higher precision and lower recall and F1 for the default method.
+The default optimizer is standard gradient descent ("gd"). Also available is Nesterov momentum ("nest"). The two optimizers return results with the same accuracy but with higher precision and lower recall and F1 for the default method. In addition, the Nesterov momentum opotimizer converges much faster.
+
+### Momemtum-based optimizers
+
+ Momentum-based optimizers accelerate gradient descent using a moving average of past gradients. This reduces oscillations and speeds convergence.
+
+Formula:
+- v_(t+1) = beta * v_t + (1 - beta) * grad L(w_t)
+- w_(t+1) = w_t - eta * v_(t+1)
+
+where:
+- v_t is the velocity (running average of gradients)
+- beta is the momentum factor (between 0 and 1, how much past gradients are remembered)
+- grad L(w_t) is the current gradient of the loss function
+- eta is the learning rate (size of the step taken in each update)
+
+#### RMSprop (root mean square propagation) - not implemented
+
+RMSprop uses an exponentially weighted moving average of the squared gradients to prevent the learning rate from decreasing too quickly.
+
+Formula:
+- v_(t+1) = beta * v_t + (1 - beta) * (grad L(w_t))^2
+- w_(t+1) = w_t - eta / (sqrt(v_(t+1)) + epsilon) * grad L(w_t)
+
+#### Nesterov momentum - implemented
 
 Nesterov momentum adds a momentum term to the update rule of the gradient descent to mitigate problems with oscillation, where the momentum term is a weighted average of the past gradients with the weighting decreasing exponentially as gradients get further away in time.
+
+- computes gradient at future position instead of current position
+
+Formula:
+- v_(t+1) = beta * v_t + grad L(w_t - eta * beta * v_t)
+- w_(t+1) = w_t - eta * v_(t+1)
+
+
+### Adam optimizer - implemented
+
+Adam (adaptive moment estimation) combines momentum and RMSprop techniques to adjust learning rates during training.
 
 
 Next:
 - A more complex optimization function (for example: Nesterov momentum,
 RMSprop, Adam, ...).
-- A display of multiple learning curves on the same graph (really useful to compare different models). - done for three training metrics

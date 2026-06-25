@@ -3,7 +3,6 @@ import numpy as np
 import pickle
 from .preprocessing import get_mean_std
 from .math_tools import my_metrics, my_abs, binary_cross_entropy
-from .plot_loss import plot_metrics
 
 
 class MLP:
@@ -15,6 +14,9 @@ class MLP:
         hidden1 to hidden2,
         hidden2 to output
         and sets biases to zero"""
+        # set seed for repeatability
+        np.random.seed(42)
+        
         self.weights_input_hidden1 = np.random.randn(input_size, hidden_size) * np.sqrt(1/input_size)
         self.weights_hidden1_hidden2 = np.random.randn(hidden_size, hidden_size) * np.sqrt(1/hidden_size)
         self.weights_hidden2_output = np.random.randn(hidden_size, output_size) * np.sqrt(1/hidden_size)
@@ -141,10 +143,10 @@ class MLP:
             prev_loss = loss
 
         # plot curves
-        plot_metrics(
-            acc, training_precision,
-            training_recall, training_F1,
-            title="Training metrics")
+        # plot_metrics(
+        #     acc, training_precision,
+        #     training_recall, training_F1,
+        #     title="Training metrics")
 
         # return histories of the loss and accuracy
         return training_loss, validation_loss, acc, acc_val
@@ -161,7 +163,7 @@ class MLP:
         # return prediction and probability based on scaled data
         return self.make_prediction(X_scaled), self.forward(X_scaled)
 
-    def save_weights(self, file_name='trained_weights.pkl'):
+    def save_weights(self, file_name='trained_weights_gd.pkl'):
         """Save everything to a pickle file"""
 
         model_data = {
@@ -179,7 +181,7 @@ class MLP:
             pickle.dump(model_data, f)
 
 
-    def load_weights(self, file_name='trained_weights.pkl'):
+    def load_weights(self, file_name='trained_weights_gd.pkl'):
         """Load pickle file"""
         with open(file_name, "rb") as f:
             try:
