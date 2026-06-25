@@ -119,7 +119,8 @@ class MLP_momentum:
         self.final_output = self.sigmoid(self.final_input)
         return self.final_output
 
-    def gd_grad(self, learning_rate, grad_wh2o, grad_bo, grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
+    def gd_grad(self, learning_rate, grad_wh2o, grad_bo,
+                grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
         """does the backward propogation using the basic gradient descent method"""
         # update the weights and biases from the second layer to the ouput layer
         self.weights_hidden2_output -= learning_rate * grad_wh2o
@@ -145,7 +146,8 @@ class MLP_momentum:
             + (1 + self.momentum) * velocity
         )
 
-    def nesterov_grad(self, learning_rate, grad_wh2o, grad_bo, grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
+    def nesterov_grad(self, learning_rate, grad_wh2o, grad_bo,
+                      grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
         """does the backward propogation using the Nesterov momentum method"""
         # update weights and biases
         self.nesterov_update(
@@ -205,7 +207,9 @@ class MLP_momentum:
         param -= lr * m_hat / (np.sqrt(v_hat) + self.epsilon)
 
 
-    def adam_grad(self, learning_rate, grad_wh2o, grad_bo, grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
+    def adam_grad(self, learning_rate, grad_wh2o, grad_bo,
+                  grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
+        """does the backward propogation using the Adam optimizer"""
 
         self.t += 1
 
@@ -273,12 +277,9 @@ class MLP_momentum:
         )
 
 
-    def rmsprop_grad(
-            self,
-            learning_rate,
-            grad_wh2o, grad_bo,
-            grad_wh1h2, grad_bh2,
-            grad_wih1, grad_bh1):
+    def rmsprop_grad(self, learning_rate, grad_wh2o, grad_bo,
+                     grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
+        """does the backward propogation using RMSprop"""
 
         self.rmsprop_update(
             self.weights_hidden2_output,
@@ -331,7 +332,7 @@ class MLP_momentum:
         hidden1_error = np.dot(hidden2_error, self.weights_hidden1_hidden2.T) * self.hidden1_output * (1 - self.hidden1_output)
 
         m = X.shape[0]
-        # calculate gradients scaled to "batch size"
+        # calculate gradients scaled to "batch size" m
         grad_wh2o = np.dot(self.hidden2_output.T, output_error) / m
         grad_bo = np.sum(output_error, axis=0, keepdims=True) / m
 

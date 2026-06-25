@@ -144,7 +144,7 @@ where:
 - grad L(w_t) is the current gradient of the loss function
 - eta is the learning rate (size of the step taken in each update)
 
-#### RMSprop (root mean square propagation) - not implemented
+#### RMSprop (root mean square propagation)
 
 RMSprop uses an exponentially weighted moving average of the squared gradients to prevent the learning rate from decreasing too quickly.
 
@@ -152,7 +152,7 @@ Formula:
 - v_(t+1) = beta * v_t + (1 - beta) * (grad L(w_t))^2
 - w_(t+1) = w_t - eta / (sqrt(v_(t+1)) + epsilon) * grad L(w_t)
 
-#### Nesterov momentum - implemented
+#### Nesterov momentum
 
 Nesterov momentum adds a momentum term to the update rule of the gradient descent to mitigate problems with oscillation, where the momentum term is a weighted average of the past gradients with the weighting decreasing exponentially as gradients get further away in time.
 
@@ -163,11 +163,10 @@ Formula:
 - w_(t+1) = w_t - eta * v_(t+1)
 
 
-### Adam optimizer - implemented
+### Adam optimizer
 
 Adam (adaptive moment estimation) combines momentum and RMSprop techniques to adjust learning rates during training.
 
-
-Next:
-- A more complex optimization function (for example: Nesterov momentum,
-RMSprop, Adam, ...).
+To do:
+- Better comments and explinations of various optimizers
+- clean files
