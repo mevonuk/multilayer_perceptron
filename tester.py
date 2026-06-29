@@ -5,11 +5,7 @@ from predict import predicting
 
 
 def main():
-    """Based on selected mode:
-    pre_process: cleans data and splits it into training and testing sets;
-    train: trains the MLP model on the training data;
-    predict: predicts the oucome of the test data and provides the accuracy;
-    all: does all three in one go"""
+    """Read in preferences and direct program as appropriate"""
     parser = argparse.ArgumentParser(description="process, train, predict MLP model")
 
     parser.add_argument(

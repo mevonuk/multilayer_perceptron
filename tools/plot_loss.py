@@ -1,16 +1,6 @@
 import matplotlib.pyplot as plt
 
 
-def plot_loss(training_loss):
-    """plot the loss history"""
-    plt.plot(training_loss)
-    plt.title("Loss Function vs Epoch")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.grid(True)
-    plt.show()
-
-
 def plot2(training, validation, title):
     """plot training and validation history"""
     plt.figure(figsize=(8, 5))
@@ -28,10 +18,8 @@ def plot2(training, validation, title):
 
 
 def plot_compare(
-        validation_gd,
-        validation_adam,
-        validation_nest,
-        validation_rms,
+        validation_gd, validation_adam,
+        validation_nest, validation_rms,
         title):
     """compare validation histories for different optimizers"""
     plt.figure(figsize=(8, 5))
@@ -40,24 +28,6 @@ def plot_compare(
     plt.plot(validation_nest, label="Nesterov momentum")
     plt.plot(validation_adam, label="Adam")
     plt.plot(validation_rms, label="RMSprop")
-
-    plt.title(title + " vs Epoch")
-    plt.xlabel("Epoch")
-    plt.ylabel(title)
-    plt.grid(True)
-    plt.legend()
-
-    plt.show()
-
-
-def plot_metrics(accuracy, percision, recall, F1, title):
-    """plot metrics history"""
-    plt.figure(figsize=(8, 5))
-
-    plt.plot(accuracy, label="accuracy")
-    plt.plot(percision, label="precision")
-    plt.plot(recall, label="recall")
-    plt.plot(F1, label="F1")
 
     plt.title(title + " vs Epoch")
     plt.xlabel("Epoch")

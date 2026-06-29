@@ -4,7 +4,7 @@ from tools.MLP_momentum import MLP_momentum
 
 
 def train_model(max_epochs, learn_factor, optimizer, hidden_size, v):
-
+    """load data, set learning rate, normalize data, train, save weights"""
     if v: print("\nLoading the split datasets...")
     X_train, y_train = load_split_data(data_type='train')
     if v: print("Training data loaded")
@@ -54,7 +54,7 @@ def train_model(max_epochs, learn_factor, optimizer, hidden_size, v):
 
 
 def training(max_epochs, learn_factor, optimizer, hidden_size, verbose):
-
+    """train according to optimizer type and plot training history"""
     try:
 
         # make the MLP specifying size of hidden and output layers

@@ -4,6 +4,7 @@ from tools.MLP_momentum import MLP_momentum
 
 
 def predict(optimizer, X, y, verbose):
+        # initialize the MLP
         mp_test = MLP_momentum(X.shape[1], optimizer=optimizer)
 
         # load weights
@@ -24,7 +25,7 @@ def predict(optimizer, X, y, verbose):
 
 
 def predicting(optimizer, verbose):
-
+    """predict using saved weights and biases based on optimizer type"""
     if verbose: print("\nLoading the split datasets...")
     X_test, y_test = load_split_data(data_type='test')
     if verbose: print("Test data loaded")
@@ -44,23 +45,23 @@ def predicting(optimizer, verbose):
 
             print("\nComparison of predictions")
             print("               GD     Nest     Adam  RMSprop")
+            print(f'Loss:      {loss_gd:.4f}   {loss_nest:.4f}   {loss_adam:.4f}   {loss_rms:.4f}')
             print(f'Accuracy:  {accuracy_gd:.4f}   {accuracy_nest:.4f}   {accuracy_adam:.4f}   {accuracy_rms:.4f}')
             print(f'Precision: {precision_gd:.4f}   {precision_nest:.4f}   {precision_adam:.4f}   {precision_rms:.4f}')
             print(f'Recall:    {recall_gd:.4f}   {recall_nest:.4f}   {recall_adam:.4f}   {recall_rms:.4f}')
             print(f'F1:        {F1_gd:.4f}   {F1_nest:.4f}   {F1_adam:.4f}   {F1_rms:.4f}')
-            print(f'Loss:      {loss_gd:.4f}   {loss_nest:.4f}   {loss_adam:.4f}   {loss_rms:.4f}')
-            
+ 
         else:
             accuracy, precision, recall, F1, loss = predict(
                  optimizer, X_test, y_test, verbose)
 
             # compare prediction to real values
             print("\nMetrics of the final", optimizer, "prediction:")
+            print(f'Loss:      {loss:.4f}')
             print(f'Accuracy:  {accuracy:.4f}')
             print(f'Precision: {precision:.4f}')
             print(f'Recall:    {recall:.4f}')
             print(f'F1:        {F1:.4f}')
-            print(f'Loss:      {loss:.4f}')
 
     except (TypeError, Exception, KeyboardInterrupt) as e:
         print(e)

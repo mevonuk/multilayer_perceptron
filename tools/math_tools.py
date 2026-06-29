@@ -91,4 +91,3 @@ def std_column(col) -> int | float:
     if N == 0:
         return float('nan')
     return sqrt(sum_items((x - m) ** 2 for x in col) / N)
-

@@ -1,4 +1,3 @@
-# load a csv file without header into a pandas dataframe
 import pandas as pd
 import os
 import pickle
@@ -7,7 +6,6 @@ import sys
 
 def load(path: str) -> pd.core.frame.DataFrame:
     """takes file path of dataset to load,
-    displays a message specifying the dimensions of the dataset,
     returns the dataset loaded as a pandas.DataFrame"""
     if not isinstance(path, str):
         print("Filename should be a string")
@@ -27,7 +25,6 @@ def load(path: str) -> pd.core.frame.DataFrame:
     try:
         # load data with pandas using most common character encoding
         data = pd.read_csv(path, encoding='utf-8', header=None)
-        # print("Loading dataset of dimensions", data.shape)
         return data
     except pd.errors.ParserError:
         print("Error parsing CSV. File may not be properly formatted.")
@@ -38,6 +35,8 @@ def load(path: str) -> pd.core.frame.DataFrame:
     
 
 def load_split_data(data_type, filename="split_datasets.pkl"):
+    """loads split data sets
+    returns either the test or the train sets"""
     with open(filename, "rb") as f:
         try:
             split_datasets = pickle.load(f)
@@ -62,6 +61,7 @@ def load_split_data(data_type, filename="split_datasets.pkl"):
 
 
 def save_split_data(X_train, y_train, X_test, y_test, filename="split_datasets.pkl"):
+    """saves the test and train data sets into a pickle file"""
     # store the datasets to be stowed in pickle file
     split_datasets = {
         'X_train' : X_train,

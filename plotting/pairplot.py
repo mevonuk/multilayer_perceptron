@@ -26,7 +26,8 @@ def pairplotter(
     versus: str,
     save_fig=False
     ):
-    """displays pairplot"""
+    """displays pairplot of a list of features
+    saves as PDF if specified"""
 
     color_map = create_color_mapping(data, versus)
 

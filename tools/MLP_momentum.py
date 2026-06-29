@@ -342,6 +342,7 @@ class MLP_momentum:
         grad_wih1 = np.dot(X.T, hidden1_error) / m
         grad_bh1 = np.sum(hidden1_error, axis=0, keepdims=True) / m
 
+        # backpropagate according to optimizer type
         if self.optimizer == 'gd':
             self.gd_grad(
                 learning_rate,
@@ -462,7 +463,8 @@ class MLP_momentum:
     
 
     def predict(self, X):
-        """make a prediction"""
+        """normalize data
+        return prediction and probabilities"""
         # first scale test data in same way train data was scaled to match weights and biases
         X_scaled = self.normalize_data(X, set_norm=False)
         # return prediction and probability based on scaled data
@@ -470,7 +472,7 @@ class MLP_momentum:
 
 
     def save_weights(self, file_name='trained_weights_'):
-        """Save everything to a pickle file"""
+        """Save weights, biases, norm factors to a pickle file"""
 
         model_data = {
             'hidden_size' : self.hidden_size,
