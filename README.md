@@ -157,7 +157,7 @@ Nesterov momentum adds a momentum term to the update rule of the gradient descen
 - computes gradient at future position instead of current position
 
 Formula:
-- v_(t+1) = beta * v_t + grad L(w_t - eta * beta * v_t)
+- $v_(t+1)$ = beta * v_t + grad L(w_t - eta * beta * v_t)
 - w_(t+1) = w_t - eta * v_(t+1)
 
 ### Adam optimizer
