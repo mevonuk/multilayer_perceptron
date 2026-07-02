@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 from .preprocessing import get_mean_std
 from .math_tools import my_metrics, binary_cross_entropy
+from .math_tools import categorical_cross_entropy, sigmoid, softmax
 
 
 class MLP_momentum:
@@ -196,28 +197,21 @@ class MLP_momentum:
         X_scaled[features] = (X_scaled[features] - self.mu) / self.sigma
         return X_scaled
 
-
-    def sigmoid(self, x):
-        """sigmoid function"""
-        x = np.clip(x, -500, 500)
-        return 1 / (1 + np.exp(-x))
-
-
     def forward(self, X):
         """forward propagation"""
         # X is the input
         # dot product of input with weights from input to hidden layer 1, add bias
         self.hidden1_input = np.dot(X, self.weights_input_hidden1) + self.bias_hidden1
         # activation function used on this...
-        self.hidden1_output = self.sigmoid(self.hidden1_input)
+        self.hidden1_output = sigmoid(self.hidden1_input)
         # then take hidden layer 1 output dotted with the wieghts from the hidden layer 1 to hidden layer 2 plus bias
         self.hidden2_input = np.dot(self.hidden1_output, self.weights_hidden1_hidden2) + self.bias_hidden2
         # activation function used on this...
-        self.hidden2_output = self.sigmoid(self.hidden2_input)
+        self.hidden2_output = sigmoid(self.hidden2_input)
         # then take sigmoid output dotted with the wieghts from the hidden layer to the output layer plus bias
         self.final_input = np.dot(self.hidden2_output, self.weights_hidden2_output) + self.bias_output
         # then use the sigmoid activation to get the output
-        self.final_output = self.sigmoid(self.final_input)
+        self.final_output = sigmoid(self.final_input)
         return self.final_output
 
     def backward(self, X, y, output, learning_rate):
@@ -321,7 +315,7 @@ class MLP_momentum:
 
     def gd_grad(self, learning_rate, grad_wh2o, grad_bo,
                 grad_wh1h2, grad_bh2, grad_wih1, grad_bh1):
-        """does the backward propogation using the basic gradient descent method"""
+        """does the backward propogation using the standard gradient descent method"""
         # update the weights and biases from the second layer to the ouput layer
         self.weights_hidden2_output -= learning_rate * grad_wh2o
         self.bias_output -= learning_rate * grad_bo

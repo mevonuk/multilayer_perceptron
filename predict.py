@@ -1,6 +1,6 @@
 from tools.load_save_data import load_split_data
 from tools.math_tools import my_metrics, binary_cross_entropy
-from tools.MLP_momentum import MLP_momentum
+from tools.MLP_flex import MLP_momentum
 
 
 def predict(optimizer, X, y, verbose):
@@ -19,7 +19,7 @@ def predict(optimizer, X, y, verbose):
 
         # compare prediction to real values
         accuracy, precision, recall, F1 = my_metrics(
-            output_prediction, y.to_numpy())
+            output_prediction.to_numpy(), y.to_numpy())
 
         return accuracy, precision, recall, F1, loss
 

@@ -17,10 +17,10 @@ def main():
     )
 
     parser.add_argument(
-        "--hidden_size",
-        type=int,
-        default=10,
-        help="Number of neurons in the hidden layers"
+        "--hidden_layers",
+        type=str,
+        default="10,10",
+        help="Comma-separated list of neurons in each hidden layer"
     )
 
     parser.add_argument(
@@ -63,7 +63,7 @@ def main():
     args = parser.parse_args()
 
     program_mode = args.program_mode
-    hidden_size = args.hidden_size
+    hidden_layers = [int(x) for x in args.hidden_layers.split(",")]
     max_epochs = args.max_epochs
     learn_factor = args.learn_factor
     split_size = args.split_size
@@ -76,14 +76,14 @@ def main():
         preprocess(split_size, verbose)
 
     elif program_mode == "train":
-        training(max_epochs, learn_factor, optimizer, hidden_size, verbose)
+        training(max_epochs, learn_factor, optimizer, hidden_layers, verbose)
 
     elif program_mode == "predict":
         predicting(optimizer, verbose)
 
     else:
         preprocess(split_size, verbose)
-        training(max_epochs, learn_factor, optimizer, hidden_size, verbose)
+        training(max_epochs, learn_factor, optimizer, hidden_layers, verbose)
         predicting(optimizer, verbose)
 
 

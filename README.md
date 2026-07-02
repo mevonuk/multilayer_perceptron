@@ -4,6 +4,8 @@
 
 Introduction to artificial neural networks implementing multilayer perceptron to predict a malignant or benign cancer diagnosis for cell masses.
 
+$\it{This project has been created as part of the 42 curriculum.}$
+
 ### Contributor
 - M. Evonuk (https://github.com/mevonuk)
 
@@ -133,8 +135,8 @@ Repeated steps are taken in the opposite direction of the gradient (the directio
  Momentum-based optimizers (such as RMSprop and Nesterov momentum) accelerate gradient descent using a moving average of past gradients. This reduces oscillations and speeds convergence.
 
 Formula:
-- $v_{t+1} = \beta * v_t + (1 - \beta) * \nabla L(w_t)$
-- $w_{t+1} = w_t - \eta * v_{t+1}$
+- $v_{t+1} = \beta v_t + (1 - \beta) \nabla L(w_t)$
+- $w_{t+1} = w_t - \eta v_{t+1}$
 
 where:
 - $v_t$ is the velocity (running average of gradients)
@@ -142,23 +144,35 @@ where:
 - $\nabla L(w_t)$ is the current gradient of the loss function
 - $\eta$ is the learning rate (size of the step taken in each update)
 
+Updating:
+- the velocity is updated considering the previous velocity (the momentum) and the current gradient. $\beta$ determines the wieght of the previous velocity
+- the weights are updated using the velocity $v_{t+1}$, which is the weighted average of past gradients and the current gradient
+
+Different momentum methods vary in the way they calculate the velocity.
+
 #### RMSprop (root mean square propagation)
 
 RMSprop uses an exponentially weighted moving average of the squared gradients to prevent the learning rate from decreasing too quickly.
 
 Formula:
-- $v_{t+1} = \beta * v_t + (1 - \beta) * (\nabla L(w_t))^2$
-- $w_{t+1} = w_t - \eta / (\sqrt{v_{t+1}} + \epsilon) * \nabla L(w_t)$
+- $v_{t+1} = \beta v_t + (1 - \beta) (\nabla L(w_t))^2$
+- $w_{t+1} = w_t - \eta / (\sqrt{v_{t+1}} + \epsilon) \nabla L(w_t)$
 
 #### Nesterov momentum
 
-Nesterov momentum adds a momentum term to the update rule of the gradient descent to mitigate problems with oscillation, where the momentum term is a weighted average of the past gradients with the weighting decreasing exponentially as gradients get further away in time.
+Nesterov momentum adds a momentum term that is a weighted average of the past gradients with the weighting decreasing exponentially as the gradients get further away in time.
 
-- computes gradient at future position instead of current position
+- it computes the gradient at a future position instead of that the current position
 
 Formula:
-- $v_{t+1} = \beta * v_t + \nabla L(w_t - \eta * \beta * v_t)$
-- $w_{t+1} = w_t - \eta * v_{t+1}$
+- $v_{t+1} = \beta v_t + \nabla L(w_t - \eta \beta v_t)$
+- $w_{t+1} = w_t - \eta v_{t+1}$
+
+In practice, instead of computing the gradient at the future position, an equivalent reformulation is used:
+- $w_t = w_{t-1} - \beta v_{t-1} + (1+\beta)v_t$
+- where $v_t = \beta v_{t-1} - \eta \nabla L(w_t)$
+
+Therefore, the implementation is a Nesterov-style parameter update, or a reformulated Nesterov momentum update, not the original Nesterov algorithm.
 
 ### Adam optimizer
 

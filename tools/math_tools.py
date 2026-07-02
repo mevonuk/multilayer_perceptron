@@ -3,10 +3,31 @@ import pandas as pd
 import numpy as np
 
 
+def relu(x):
+    """ReLU function"""
+    return np.maximum(0, x)
+
+def sigmoid(x):
+    """sigmoid function"""
+    x = np.clip(x, -500, 500)
+    return 1 / (1 + np.exp(-x))
+    
+    
+def softmax(z):
+    """softmax function"""
+    exp_z = np.exp(z - np.max(z))  # For numerical stability
+    return exp_z / exp_z.sum()
+
+
 def binary_cross_entropy(y_true, y_pred, epsilon=1e-15):
     """calculate the binary cross entropy"""
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
     return -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+
+
+def categorical_cross_entropy(y_true, y_pred, epsilon=1e-15):
+    y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
+    return -np.mean(np.sum(y_true * np.log(y_pred), axis=1))
 
 
 def my_metrics(y_pred, y_true):

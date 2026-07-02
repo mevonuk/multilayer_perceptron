@@ -1,9 +1,9 @@
 from tools.load_save_data import load_split_data
 from tools.plot_loss import plot2, plot_compare
-from tools.MLP_momentum import MLP_momentum
+from tools.MLP_flex import MLP_momentum
 
 
-def train_model(max_epochs, learn_factor, optimizer, hidden_size, v):
+def train_model(max_epochs, learn_factor, optimizer, hidden_layers, v):
     """load data, set learning rate, normalize data, train, save weights"""
     if v: print("\nLoading the split datasets...")
     X_train, y_train = load_split_data(data_type='train')
@@ -30,7 +30,7 @@ def train_model(max_epochs, learn_factor, optimizer, hidden_size, v):
     print("Learning rate:", learning_rate)
 
     # make the MLP specifying size of hidden and output layers
-    mp_test = MLP_momentum(X_train.shape[1], hidden_size, 1, optimizer)
+    mp_test = MLP_momentum(X_train.shape[1], hidden_layers=hidden_layers, optimizer=optimizer)
 
     # feature normalization
     if v: print("Normalizing training set...")
@@ -53,7 +53,7 @@ def train_model(max_epochs, learn_factor, optimizer, hidden_size, v):
     return train_loss, val_loss, train_acc, val_acc
 
 
-def training(max_epochs, learn_factor, optimizer, hidden_size, verbose):
+def training(max_epochs, learn_factor, optimizer, hidden_layers, verbose):
     """train according to optimizer type and plot training history"""
     try:
 
@@ -63,7 +63,7 @@ def training(max_epochs, learn_factor, optimizer, hidden_size, verbose):
             print("\nInitializing and training MLP model using", optimizer, "...")
 
             train_loss, val_loss, train_acc, val_acc = train_model(
-                max_epochs, learn_factor, optimizer, hidden_size, 1)
+                max_epochs, learn_factor, optimizer, hidden_layers, 1)
 
             plot2(train_loss, val_loss, 'Loss')
             plot2(train_acc, val_acc, 'Accuracy')
@@ -74,16 +74,16 @@ def training(max_epochs, learn_factor, optimizer, hidden_size, verbose):
 
             print("\nGradient descent...")
             train_loss_gd, val_loss_gd, train_acc_gd, val_acc_gd = train_model(
-                max_epochs, learn_factor, 'gd', hidden_size, 0)
+                max_epochs, learn_factor, 'gd', hidden_layers, 0)
             print("\nNesterov momentum...")
             train_loss_nest, val_loss_nest, train_acc_nest, val_acc_nest = train_model(
-                max_epochs, learn_factor, 'nest', hidden_size, 0)
+                max_epochs, learn_factor, 'nest', hidden_layers, 0)
             print("\nAdam...")
             train_loss_adam, val_loss_adam, train_acc_adam, val_acc_adam = train_model(
-                max_epochs, learn_factor, 'adam', hidden_size, 0)
+                max_epochs, learn_factor, 'adam', hidden_layers, 0)
             print("\nRMSprop...")
             train_loss_rms, val_loss_rms, train_acc_rms, val_acc_rms = train_model(
-                max_epochs, learn_factor, 'rms', hidden_size, 0)
+                max_epochs, learn_factor, 'rms', hidden_layers, 0)
             
             plot_compare(
                 train_loss_gd, train_loss_adam, train_loss_nest, train_loss_rms,
