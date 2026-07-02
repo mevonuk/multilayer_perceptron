@@ -133,13 +133,13 @@ Repeated steps are taken in the opposite direction of the gradient (the directio
  Momentum-based optimizers (such as RMSprop and Nesterov momentum) accelerate gradient descent using a moving average of past gradients. This reduces oscillations and speeds convergence.
 
 Formula:
-- $v_{t+1} = \beta * v_t + (1 - \beta) * \grad L(w_t)$
+- $v_{t+1} = \beta * v_t + (1 - \beta) * \nabla L(w_t)$
 - $w_{t+1} = w_t - \eta * v_{t+1}$
 
 where:
 - $v_t$ is the velocity (running average of gradients)
 - $\beta$ is the momentum factor (between 0 and 1, how much past gradients are remembered)
-- $\grad L(w_t)$ is the current gradient of the loss function
+- $\nabla L(w_t)$ is the current gradient of the loss function
 - $\eta$ is the learning rate (size of the step taken in each update)
 
 #### RMSprop (root mean square propagation)
@@ -147,8 +147,8 @@ where:
 RMSprop uses an exponentially weighted moving average of the squared gradients to prevent the learning rate from decreasing too quickly.
 
 Formula:
-- $v_{t+1} = \beta * v_t + (1 - \beta) * (\grad L(w_t))^2$
-- $w_{t+1} = w_t - \eta / (\sqrt(v_{t+1}) + \epsilon) * \grad L(w_t)$
+- $v_{t+1} = \beta * v_t + (1 - \beta) * (\nabla L(w_t))^2$
+- $w_{t+1} = w_t - \eta / (\sqrt{v_{t+1}} + \epsilon) * \nabla L(w_t)$
 
 #### Nesterov momentum
 
@@ -157,8 +157,8 @@ Nesterov momentum adds a momentum term to the update rule of the gradient descen
 - computes gradient at future position instead of current position
 
 Formula:
-- v_(t+1) = beta * v_t + grad L(w_t - eta * beta * v_t)
-- w_(t+1) = w_t - eta * v_(t+1)
+- $v_{t+1} = \beta * v_t + \nabla L(w_t - \eta * \beta * v_t)$
+- $w_{t+1} = w_t - \eta * v_{t+1}$
 
 ### Adam optimizer
 
