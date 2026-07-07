@@ -14,8 +14,7 @@ def predict(optimizer, X, y, verbose):
         # make a prediction using the trained weights and the test data
         if verbose: print("Making prediction...")
         output_prediction, output_prob = mp_test.predict(X)
-
-        loss = binary_cross_entropy(y.to_numpy(), output_prob)
+        loss = binary_cross_entropy(y.to_numpy(), output_prob.to_numpy())
 
         # compare prediction to real values
         accuracy, precision, recall, F1 = my_metrics(

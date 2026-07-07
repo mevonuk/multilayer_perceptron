@@ -94,7 +94,17 @@ The two data subsets X and y are split into 80% training / 20% testing sets by d
 
 A class is created to hold the weights and biases of the layers, as well as to provide routines to make forward and backward training passes. The class can also save the state of the weights/biases/normalization to a pickle file and load a pickle file with said weights, biases, and normalization terms.
 
-The class is hard coded to have an input layer, two hidden layers, and an output layer.
+### Architecture
+
+The MLP class has an input layer, two or more hidden layers, and an output layer.
+
+### Activation functions
+
+The ReLU (rectified linear unit) activation function is used for all layers except the output, where
+- ReLU($x$) = max(0,$x$)
+- $x$ being the input to the neuron.
+
+Softmax was prescribed as the activation function for the output layer even though the sigmois funtion is the natural choice given that there are only two categories: benign (B) and malignant (M).
 
 ## Program modes
 

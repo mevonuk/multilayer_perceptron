@@ -19,7 +19,7 @@ def main():
     parser.add_argument(
         "--hidden_layers",
         type=str,
-        default="10,10",
+        default="8,8,8",
         help="Comma-separated list of neurons in each hidden layer"
     )
 
@@ -69,6 +69,10 @@ def main():
     split_size = args.split_size
     verbose = args.verbose
     optimizer = args.optimizer
+
+    if len(hidden_layers) < 2:
+        print("Please specify at least 2 hidden layers.")
+        exit()
 
     print("Running program in program mode:", program_mode)
     
