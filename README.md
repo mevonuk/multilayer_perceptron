@@ -113,7 +113,7 @@ Softmax can be used as the activation function for the output layer even though 
 
 Note that:
 - sigmoid: $\sigma(z) = 1/(1+\exp(-z))$
-- softmax: $(\sigma(z))_i = \exp(z_i) / \sum\limits_{j=1}^K(\exp(z_j))$
+- softmax: $\sigma(z)_i = \frac{\exp(z_i)}{\sum_{j=1}^{K} \exp(z_j)}$
 
 ## Program modes
 
@@ -267,7 +267,7 @@ where:
     - $\eta = 0.001$ for Adam and RMSprop
 - verbose indicates verbose mode (1 or 0)
 - pdf is set to 1 to save figures as PDFs
-- ativation indicates the activation function of the output layer ('softmax' ar 'sigmoid')
+- ativation indicates the activation function of the output layer ('softmax' or 'sigmoid')
 
 When you are finished, deactivate the virtual environment and run:
 - make clean
