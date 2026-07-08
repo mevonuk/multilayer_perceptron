@@ -105,15 +105,15 @@ Different numbers of hidden layers can be specified via a list of comma-seperate
 ### Activation functions
 
 The ReLU (rectified linear unit) activation function is used for all layers except the output layer, where
-- ReLU($z$) = max(0,$z$)
+- ReLU: $\sigma(z) = max(0,z)$
 - $z$ being the input to the neuron.
 
 Softmax can be used as the activation function for the output layer even though the sigmoid funtion is the natural choice given that there are only two categories: benign (B) and malignant (M). The default method is softmax, which requires in this case an output layer with 2 nuerons (the sigmoid activation function is used with a single output nueron). The softmax function returns the output as a propalistic distribution. To explicitly specify the output layer activation function, use the activation option:
 - python tester.py --activation sigmoid
 
 Note that:
-- sigmoid($z$) = $1/(1+\exp(-z))$
-- softmax($z$)$_i$ = $\exp(z_i) / \sum\limits_{j=1}^K(\exp(z_j))$
+- sigmoid: $\sigma(z) = 1/(1+\exp(-z))$
+- softmax: $\sigma(z)_i = \exp(z_i) / \sum\limits_{j=1}^K(\exp(z_j))$
 
 ## Program modes
 
@@ -225,8 +225,7 @@ Bias correction
 - $\hat{v}_t = v_t / (1 - \beta_2^t) $
 
 Final weight/bias update
-- $w_{t+1} = w_t - \hat{m}_t \eta / (\sqrt{\hat{v}_t} + \
-epsilon)$
+- $w_{t+1} = w_t - \hat{m}_t \eta / (\sqrt{\hat{v}_t} + \epsilon)$
 
 Here, $\beta_1$ and $\beta_2$ are the decay rates for the moving averages of the gradient and the squared gradient, respectively; $\eta$ is the learning rate; and $\epsilon$ is a small value.
 
@@ -255,18 +254,22 @@ To compare the four optimizers, run:
 - make compare
 
 It is also possible to run the program from the command line with additional options, e.g.,
-- python tester.py --program_mode all --optimizer rms --hidden_layers 8,8,8 --split_size 0.2 --max_epochs 10000 --learn_factor 0.1 --verbose 1
+- python tester.py --program_mode all --optimizer rms --hidden_layers 8,8,8 --split_size 0.2 --max_epochs 10000 --learn_factor 0.1 --verbose 1 --pdf 1 --activation softmax
 
 where:
+- program_mode can be 'all', 'preprocess', 'train', or 'predict'
+- optimizer can be 'gd', 'nest', 'rms', 'adam', or 'compare'
 - hidden_layers indicates the numbers of neurons in the hidden layers
 - split_size indicates the size of the test set with respect to the train set (between 0.1 and 0.9)
 - max_epochs indicates the maximum number of epochs (may not be reached if early stopping criteria are met)
 - learn_factor indicates the multiple of the learning rate for the optimizer (i.e., learning rate = learn_factor * default learning rate). Default learning rates are:
-    - 0.01 for standard gradient descent and Nesterov momentum
-    - 0.001 for Adam and RMSprop
+    - $\eta = 0.01$ for standard gradient descent and Nesterov momentum
+    - $\eta = 0.001$ for Adam and RMSprop
 - verbose indicates verbose mode (1 or 0)
+- pdf is set to 1 to save figures as PDFs
+- ativation indicates the activation function of the output layer ('softmax' ar 'sigmoid')
 
 When you are finished, deactivate the virtual environment and run:
 - make clean
 
-This is will remove the pickle files, virtual environment, and pycache files.
+This is will remove the pickle files, virtual environment, pdf files, and pycache files.
