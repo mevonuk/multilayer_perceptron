@@ -105,7 +105,7 @@ Different numbers of hidden layers can be specified via a list of comma-seperate
 ### Activation functions
 
 The ReLU (rectified linear unit) activation function is used for all layers except the output layer, where
-- ReLU: $\sigma(z) = max(0,z)$
+- ReLU: $\sigma(z) = \max(0,z)$
 - $z$ being the input to the neuron.
 
 Softmax can be used as the activation function for the output layer even though the sigmoid funtion is the natural choice given that there are only two categories: benign (B) and malignant (M). The default method is softmax, which requires in this case an output layer with 2 nuerons (the sigmoid activation function is used with a single output nueron). The softmax function returns the output as a propalistic distribution. To explicitly specify the output layer activation function, use the activation option:
@@ -113,7 +113,7 @@ Softmax can be used as the activation function for the output layer even though 
 
 Note that:
 - sigmoid: $\sigma(z) = 1/(1+\exp(-z))$
-- softmax: $\sigma(z)_i = \exp(z_i) / \sum\limits_{j=1}^K(\exp(z_j))$
+- softmax: $(\sigma(z))_i = \exp(z_i) / \sum\limits_{j=1}^K(\exp(z_j))$
 
 ## Program modes
 
