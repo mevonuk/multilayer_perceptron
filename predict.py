@@ -1,6 +1,6 @@
 from tools.load_save_data import load_split_data
 from tools.math_tools import my_metrics, binary_cross_entropy
-from tools.MLP_soft import MLP
+from tools.MLP import MLP
 
 
 def predict(optimizer, X, y, activation, verbose):

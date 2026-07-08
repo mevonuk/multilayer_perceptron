@@ -1,6 +1,6 @@
 from tools.load_save_data import load_split_data
-from tools.plot_loss import plot2, plot_compare
-from tools.MLP_soft import MLP
+from plotting.plot_loss import plot2, plot_compare
+from tools.MLP import MLP
 
 
 def train_model(max_epochs, learn_factor, optimizer, hidden_layers, activation, v):
