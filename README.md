@@ -98,9 +98,8 @@ A class is created to hold the weights and biases of the layers, as well as to p
 
 The MLP class has an input layer, two (default) hidden layers, and an output layer.
 
-Different numbers of hidden layers can be specified via a list of comma-seperated layer sizes. For example, to create three hidden layers with 8 nuerons each, enter:
+Different numbers of hidden layers can be specified via a list of comma-separated layer sizes. For example, to create three hidden layers with 8 neurons each, enter:
 - python tester.py --hidden_layers 8,8,8
-
 
 ### Activation functions
 
@@ -108,7 +107,7 @@ The ReLU (rectified linear unit) activation function is used for all layers exce
 - ReLU: $\sigma(z) = \max(0,z)$
 - $z$ being the input to the neuron.
 
-Softmax can be used as the activation function for the output layer even though the sigmoid funtion is the natural choice given that there are only two categories: benign (B) and malignant (M). The default method is softmax, which requires in this case an output layer with 2 nuerons (the sigmoid activation function is used with a single output nueron). The softmax function returns the output as a propalistic distribution. To explicitly specify the output layer activation function, use the activation option:
+Softmax can be used as the activation function for the output layer even though the sigmoid function is the natural choice given that there are only two categories: benign (B) and malignant (M). The default method is softmax, which requires in this case an output layer with 2 neurons (the sigmoid activation function is used with a single output neuron). The softmax function returns the output as a probabilistic distribution. To explicitly specify the output layer activation function, use the activation option:
 - python tester.py --activation sigmoid
 
 Note that:
@@ -133,16 +132,16 @@ The main program can be run in different program modes: preprocess; train; predi
 - plots training metrics (accuracy, precision, recall, F1) versus Epoch (compare mode)
 - plots loss and accuracy versus epoch for the training and validation sets (individual optimizers)
     - to save figures as PDFs, add option: --pdf 1
-- saves weights and biases of trained model to a pickle file, as well as the model achitechture
+- saves weights and biases of trained model to a pickle file, as well as the model architecture
 
 ### predict
 
 - loads the split data and checks activation type
-- loads the saved MLP model weights and biases and achitechture
+- loads the saved MLP model weights and biases and architecture
 - makes a prediction for the test set
 - gives final metrics for the final prediction
 
-Note that, if running seperately, options for predict (e.g., optimizer) will be over-written in favor of those loaded with the achitecture and the trained weights and biases.
+Note that, if running separately, options for predict (e.g., optimizer) will be over-written in favor of those loaded with the architecture and the trained weights and biases.
 
 ## Optimizers
 
@@ -164,7 +163,7 @@ where:
 
  Momentum-based optimizers (such as Nesterov momentum) accelerate gradient descent using a moving average of past gradients. This reduces oscillations and speeds convergence.
 
-In general, momemtum-based operators operate as follows.
+In general, momentum-based operators operate as follows.
 
 Formula:
 - $v_{t+1} = \beta v_t + (1 - \beta) \nabla L(w_t)$
@@ -177,7 +176,7 @@ where:
 - $\eta$ is the learning rate (size of the step taken in each update)
 
 Updating:
-- the velocity is updated considering the previous velocity (the momentum) and the current gradient. $\beta$ determines the wieght of the previous velocity
+- the velocity is updated considering the previous velocity (the momentum) and the current gradient. $\beta$ determines the weight of the previous velocity
 - the weights are updated using the velocity $v_{t+1}$, which is the weighted average of past gradients and the current gradient
 
 Different momentum methods vary in the way they calculate the velocity.
@@ -217,7 +216,7 @@ Adam (adaptive moment estimation) combines the momentum and RMSprop techniques t
 First moment (mean) estimate
 - $m_t = \beta_1 m_{t-1} + (1-\beta_1) \nabla L(w_t) $
 
-Second moment (varience) estimate
+Second moment (variance) estimate
 - $v_t = \beta_2 v_{t-1} + (1-\beta_2) (\nabla L(w_t)^2) $
 
 Bias correction
@@ -228,7 +227,6 @@ Final weight/bias update
 - $w_{t+1} = w_t - \hat{m}_t \eta / (\sqrt{\hat{v}_t} + \epsilon)$
 
 Here, $\beta_1$ and $\beta_2$ are the decay rates for the moving averages of the gradient and the squared gradient, respectively; $\eta$ is the learning rate; and $\epsilon$ is a small value.
-
 
 ## To run
 
@@ -267,7 +265,7 @@ where:
     - $\eta = 0.001$ for Adam and RMSprop
 - verbose indicates verbose mode (1 or 0)
 - pdf is set to 1 to save figures as PDFs
-- ativation indicates the activation function of the output layer ('softmax' or 'sigmoid')
+- activation indicates the activation function of the output layer ('softmax' or 'sigmoid')
 
 When you are finished, deactivate the virtual environment and run:
 - make clean
