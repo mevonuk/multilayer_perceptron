@@ -9,10 +9,18 @@ def main():
     parser = argparse.ArgumentParser(description="process, train, predict MLP model")
 
     parser.add_argument(
+        "--activation",
+        type=str,
+        default="softmax",
+        choices=["softmax", "sigmoid"],
+        help="Output activation function"
+    )
+
+    parser.add_argument(
         "--program_mode",
         type=str,
         default="all",
-        choices=["pre_process", "train", "predict", "all"],
+        choices=["preprocess", "train", "predict", "all"],
         help="Mode of program execution"
     )
 
@@ -69,26 +77,36 @@ def main():
     split_size = args.split_size
     verbose = args.verbose
     optimizer = args.optimizer
-
-    if len(hidden_layers) < 2:
-        print("Please specify at least 2 hidden layers.")
-        exit()
+    activation = args.activation
 
     print("Running program in program mode:", program_mode)
     
-    if program_mode == "pre_process":
-        preprocess(split_size, verbose)
+    if program_mode == "preprocess":
+        preprocess(split_size, activation, verbose)
 
     elif program_mode == "train":
-        training(max_epochs, learn_factor, optimizer, hidden_layers, verbose)
+        training(
+            max_epochs,
+            learn_factor,
+            optimizer,
+            hidden_layers,
+            activation,
+            verbose
+        )
 
     elif program_mode == "predict":
-        predicting(optimizer, verbose)
+        predicting(optimizer, activation, verbose)
 
     else:
-        preprocess(split_size, verbose)
-        training(max_epochs, learn_factor, optimizer, hidden_layers, verbose)
-        predicting(optimizer, verbose)
+        preprocess(split_size, activation, verbose)
+        training(
+            max_epochs,
+            learn_factor,
+            optimizer,
+            hidden_layers,
+            activation,
+            verbose)
+        predicting(optimizer, activation, verbose)
 
 
 if __name__ == "__main__":

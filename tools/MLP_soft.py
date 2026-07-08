@@ -3,18 +3,25 @@ import numpy as np
 import pickle
 from .preprocessing import get_mean_std
 from .math_tools import my_metrics, binary_cross_entropy
-from .math_tools import sigmoid, relu
+from .math_tools import sigmoid, softmax, relu
 
 
-class MLP_momentum:
+class MLP:
     """multilayer perceptron class with 2 hidden layers
     using Nesterov momentum as the optimizer"""
-    def __init__(self, input_size, hidden_layers=None, output_size=1, optimizer='gd'):
+    def __init__(self, input_size, hidden_layers=None, optimizer='gd', activation='sigmoid'):
         """randomly initializes weights between 4 layers:
         input to hidden1,
         hidden1 to hidden2,
         hidden2 to output
         and sets biases to zero"""
+
+        # Set output size based on activation layer
+        self.activation = activation
+        if activation == 'sigmoid':
+            output_size = 1
+        else:
+            output_size = 2
 
         # set seed for repeatability
         np.random.seed(42)
@@ -111,7 +118,7 @@ class MLP_momentum:
             output = self.forward(X_train)
             # backward pass
             self.backward(X_train, y_train, output, learning_rate)
-            
+
             # calculate the loss
             # loss: binary cross-entropy error function
             output = self.forward(X_train)
@@ -172,14 +179,19 @@ class MLP_momentum:
     def make_prediction(self, X):
         """make a prediction"""
         output = self.forward(X)
-        return (output > 0.5).astype(int)
+        if self.activation == 'sigmoid':
+            return (output > 0.5).astype(int)
+        else:
+            hold = np.argmax(output, axis=1)
+            y = np.eye(2)[hold]
+            return y
     
 
     def predict(self, X):
         """normalize data
         return prediction and probabilities"""
         # first scale test data in same way train data was scaled to match weights and biases
-        X_scaled = self.normalize_data(X, set_norm=False)
+        X_scaled = self.normalize_data(X, set_norm=False).to_numpy()
         # return prediction and probability based on scaled data
         return self.make_prediction(X_scaled), self.forward(X_scaled)
 
@@ -214,11 +226,14 @@ class MLP_momentum:
 
         # output layer
         Z = A @ self.weights[-1] + self.biases[-1]
-        output = sigmoid(Z)
+
+        if self.activation == 'sigmoid':
+            output = sigmoid(Z)
+        else:
+            output = softmax(Z)
 
         self.z_values.append(Z)
         self.activations.append(output)
-
         return output
 
     def backward(self, X, y, output, learning_rate):
@@ -233,7 +248,7 @@ class MLP_momentum:
 
         for i in reversed(range(len(self.weights)-1)):
 
-            relu_grad = (self.z_values[i+1] > 0).astype(float)
+            relu_grad = (self.z_values[i] > 0).astype(float)
 
             deltas[i] = (
                 deltas[i+1] @ self.weights[i+1].T
@@ -264,12 +279,6 @@ class MLP_momentum:
         elif self.optimizer == 'rms':
             self.rmsprop_grad(learning_rate, grad_weights, grad_biases)
 
-        # for i, W in enumerate(self.weights):
-        #     print(
-        #         i,
-        #         np.linalg.norm(W),
-        #         np.linalg.norm(grad_weights[i])
-        #     )
 
     # --- Load and save operations ---
 
@@ -277,6 +286,7 @@ class MLP_momentum:
         """Save weights, biases, norm factors to a pickle file"""
 
         model_data = {
+            'activation' : self.activation,
             'hidden_layers' : self.hidden_layers,
             'weights' : self.weights,
             'biases' : self.biases,
@@ -302,6 +312,7 @@ class MLP_momentum:
                 print(f"Error parsing pickle file: {e}.")
                 sys.exit(1)
 
+        self.activation = model_data['activation']
         self.weights = model_data['weights']
         self.biases = model_data['biases']
         self.hidden_layers = model_data['hidden_layers']
@@ -355,15 +366,16 @@ class MLP_momentum:
     def adam_update(self, param, grad, m, v, lr):
         """Adam optimizer update"""
 
-        # update biased moments
+        # update first moment (mean) estimate
         m[:] = self.beta1 * m + (1 - self.beta1) * grad
+        # update second moment (varience) estimate
         v[:] = self.beta2 * v + (1 - self.beta2) * (grad ** 2)
 
-        # bias correction
+        # bias corrections
         m_hat = m / (1 - self.beta1 ** self.t)
         v_hat = v / (1 - self.beta2 ** self.t)
 
-        # parameter update
+        # final parameter update
         param -= lr * m_hat / (np.sqrt(v_hat) + self.epsilon)
 
 
@@ -395,11 +407,13 @@ class MLP_momentum:
     def rmsprop_update(self, param, grad, cache, lr):
         """RMSprop parameter update"""
 
+        # update the running average
         cache[:] = (
             self.rms_beta * cache
             + (1 - self.rms_beta) * grad**2
         )
 
+        # scale the learning rate
         param -= (
             lr * grad
             / (np.sqrt(cache) + self.rms_epsilon)

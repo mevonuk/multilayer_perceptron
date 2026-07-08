@@ -1,11 +1,11 @@
 from tools.load_save_data import load_split_data
 from tools.math_tools import my_metrics, binary_cross_entropy
-from tools.MLP_flex import MLP_momentum
+from tools.MLP_soft import MLP
 
 
-def predict(optimizer, X, y, verbose):
+def predict(optimizer, X, y, activation, verbose):
         # initialize the MLP
-        mp_test = MLP_momentum(X.shape[1], optimizer=optimizer)
+        mp_test = MLP(X.shape[1], optimizer=optimizer, activation=activation)
 
         # load weights
         if verbose: print("Loading saved weights...")
@@ -14,33 +14,37 @@ def predict(optimizer, X, y, verbose):
         # make a prediction using the trained weights and the test data
         if verbose: print("Making prediction...")
         output_prediction, output_prob = mp_test.predict(X)
-        loss = binary_cross_entropy(y.to_numpy(), output_prob.to_numpy())
+        loss = binary_cross_entropy(y.to_numpy(), output_prob)
 
         # compare prediction to real values
         accuracy, precision, recall, F1 = my_metrics(
-            output_prediction.to_numpy(), y.to_numpy())
+            output_prediction, y.to_numpy())
 
         return accuracy, precision, recall, F1, loss
 
 
-def predicting(optimizer, verbose):
+def predicting(optimizer, activation, verbose):
     """predict using saved weights and biases based on optimizer type"""
-    if verbose: print("\nLoading the split datasets...")
-    X_test, y_test = load_split_data(data_type='test')
-    if verbose: print("Test data loaded")
-
-    print("\nPredicting using test dataset...")
     try:
+        if verbose: print("\nLoading the split datasets...")
+        X_test, y_test, act = load_split_data(data_type='test')
+        if act != activation:
+            raise TypeError('saved datasets do not match requested activation type')
+
+        if verbose: print("Test data loaded")
+
+        print("\nPredicting using test dataset...")
+
         # make the MLP specifying size of hidden and output layers
         if optimizer == 'compare':
             accuracy_gd, precision_gd, recall_gd, F1_gd, loss_gd = predict(
-                 'gd', X_test, y_test, verbose)
+                 'gd', X_test, y_test, activation, verbose)
             accuracy_nest, precision_nest, recall_nest, F1_nest, loss_nest = predict(
-                 'nest', X_test, y_test, verbose)
+                 'nest', X_test, y_test, activation, verbose)
             accuracy_adam, precision_adam, recall_adam, F1_adam, loss_adam = predict(
-                 'adam', X_test, y_test, verbose)
+                 'adam', X_test, y_test, activation, verbose)
             accuracy_rms, precision_rms, recall_rms, F1_rms, loss_rms = predict(
-                 'rms', X_test, y_test, verbose)
+                 'rms', X_test, y_test, activation, verbose)
 
             print("\nComparison of predictions")
             print("               GD     Nest     Adam  RMSprop")
@@ -52,7 +56,7 @@ def predicting(optimizer, verbose):
  
         else:
             accuracy, precision, recall, F1, loss = predict(
-                 optimizer, X_test, y_test, verbose)
+                 optimizer, X_test, y_test, activation, verbose)
 
             # compare prediction to real values
             print("\nMetrics of the final", optimizer, "prediction:")

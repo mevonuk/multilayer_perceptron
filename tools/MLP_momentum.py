@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 from .preprocessing import get_mean_std
 from .math_tools import my_metrics, binary_cross_entropy
-from .math_tools import categorical_cross_entropy, sigmoid, softmax
+from .math_tools import sigmoid
 
 
 class MLP_momentum:

@@ -5,12 +5,20 @@ from .math_tools import mean_column, std_column
 
 def hot_code(
     df: pd.core.frame.DataFrame,
+    activation: str,
     positive_class: str,
     col: str,
     new_col: str,
     ) -> pd.core.frame.DataFrame:
     """One-hot coding for two class data"""
-    df[new_col] = (df[col] == positive_class).astype(int)
+    df["label"] = (df[col] == positive_class).astype(int)
+    if activation == 'sigmoid':
+        df[new_col] = (df[col] == positive_class).astype(int)
+    else:
+        df[new_col] = df[col].apply(
+            lambda x: np.array([0, 1]) if x == positive_class
+            else np.array([1, 0])
+        )
     return df
 
 

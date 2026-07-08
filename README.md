@@ -22,7 +22,7 @@ Feedforward networks are networks in which information flows in a single directi
 
 ### Backpropagation
 
-Backpropagation involves computing the gradient of the loss with respect to the weights of a network for a given input-output example. That is, the process of calculating and adjusting the weights to reach an optimal value.
+Backpropagation involves computing the gradient of the loss with respect to the weights of a network for a given input-output example, that is, the process of calculating and adjusting the weights to reach an optimal value.
 
 ## Dataset
 
@@ -54,7 +54,7 @@ Class distribution: 357 benign, 212 malignant
 
 ### Labeling columns
 
-Data columns are labeled accordingly and scatterplots of the different feature combinations are made.
+Data columns are labeled and, scatterplots of the different feature combinations are made.
 
 Pair plots of the mean feature values reveal that the benign and malignant classes are best differentiated for:
 - 'radius_mean',
@@ -76,11 +76,11 @@ with the other features showing more overlap between the two classes.
 To view the pair plots using the command line, run:
 - python plotter.py --subset worst
 
-Choices for data subset are 'final', 'mean', 'std', and 'worst'.
+Choices for data subsets are 'final', 'mean', 'std', and 'worst', where 'final' provides the features used for model training and prediction.
 
 ### One-hot coding and feature normalization
 
-The dataset is split into X containing the features of interest (see above) and y containing the one-hot encoding of the diagnosis column with malignant = 1.
+The dataset is split into X containing the features of interest (see above) and y containing the one-hot encoding of the diagnosis column with a 1D array with malignant = 1 for use with the sigmoid activation function or a 2D array for use with the softmax activation function.
 
 The features in X are then normalized because gradient-based optimizations are sensitive to scale and convergence may be slow or inconsistent when using non-normalized features.
 
@@ -96,53 +96,74 @@ A class is created to hold the weights and biases of the layers, as well as to p
 
 ### Architecture
 
-The MLP class has an input layer, two or more hidden layers, and an output layer.
+The MLP class has an input layer, two (default) hidden layers, and an output layer.
+
+Different numbers of hidden layers can be specified via a list of comma-seperated layer sizes. For example, to create three hidden layers with 8 nuerons each, enter:
+- python tester.py --hidden_layers 8,8,8
+
 
 ### Activation functions
 
-The ReLU (rectified linear unit) activation function is used for all layers except the output, where
-- ReLU($x$) = max(0,$x$)
-- $x$ being the input to the neuron.
+The ReLU (rectified linear unit) activation function is used for all layers except the output layer, where
+- ReLU($z$) = max(0,$z$)
+- $z$ being the input to the neuron.
 
-Softmax was prescribed as the activation function for the output layer even though the sigmois funtion is the natural choice given that there are only two categories: benign (B) and malignant (M).
+Softmax can be used as the activation function for the output layer even though the sigmoid funtion is the natural choice given that there are only two categories: benign (B) and malignant (M). The default method is softmax, which requires in this case an output layer with 2 nuerons (the sigmoid activation function is used with a single output nueron). The softmax function returns the output as a propalistic distribution. To explicitly specify the output layer activation function, use the activation option:
+- python tester.py --activation sigmoid
+
+Note that:
+- sigmoid($z$) = $1/(1+\exp(-z))$
+- softmax($z$)$_i$ = $\exp(z_i) / \sum\limits_{j=1}^K(\exp(z_j))$
 
 ## Program modes
 
-The main program can be run in different program modes: pre_process; train; predict; and all.
+The main program can be run in different program modes: preprocess; train; predict; and all.
 
-### pre_process
+### preprocess
 
-- hot codes the diagnosis field
+- hot codes the diagnosis field according to the use of sigmoid or softmax (default) activation functions
 - splits the data into train and test sets
-- saves the split data to a pickle file
+- saves the split data to a pickle file with activation type
 
 ### train
 
-- loads the split data
+- loads the split data and checks activation type
 - initializes and trains the MLP model
 - early stopping is implemented
 - plots training metrics (accuracy, precision, recall, F1) versus Epoch (compare mode)
 - plots loss and accuracy versus epoch for the training and validation sets (individual optimizers)
-- saves weights and biases of trained model to a pickle file
+- saves weights and biases of trained model to a pickle file as well as the model achitechture
 
 ### predict
 
-- loads the split data
-- loads the saved MLP model weights and biases
+- loads the split data and checks activation type
+- loads the saved MLP model weights and biases and achitechture
 - makes a prediction for the test set
 - gives final metrics for the final prediction
 
+Note that, if running seperately, options for predict (e.g., optimizer) will be over-written in favor of those loaded with the achitecture and the trained weights and biases.
+
 ## Optimizers
 
-The default optimizer is standard gradient descent ("gd"). Also available are momentum-based optimizers, RMSprop ("rms") and Nesterov ("nest) momentum, as well as Adam ("adam). The  various optimizers return similar results but the standard gradient descent method takes much longer to converge and has slightly lower accuracy, precision, recall, and F1 metrics than the other methods.
+The default optimizer is standard gradient descent ("gd"). Also available are momentum-based optimizers, RMSprop ('rms') and Nesterov ('nest') momentum, as well as Adam ('adam'). The  various optimizers return similar results but the standard gradient descent method takes much longer to converge and has slightly lower accuracy, precision, recall, and F1 metrics than the other methods.
 
 ### Standard gradient descent
 
 Repeated steps are taken in the opposite direction of the gradient (the direction of steepest descent). This is a first-order iterative algorithm for minimizing the differential multivariate function.
 
+Formula:
+- $w_{t+1} = w_t - \eta \nabla L(w_t)$
+
+where:
+- $w_t$ indicates the weights/biases
+- $\nabla L(w_t)$ is the current gradient of the loss function
+- $\eta$ is the learning rate (size of the step taken in each update)
+
 ### Momentum-based optimizers
 
- Momentum-based optimizers (such as RMSprop and Nesterov momentum) accelerate gradient descent using a moving average of past gradients. This reduces oscillations and speeds convergence.
+ Momentum-based optimizers (such as Nesterov momentum) accelerate gradient descent using a moving average of past gradients. This reduces oscillations and speeds convergence.
+
+In general, momemtum-based operators operate as follows.
 
 Formula:
 - $v_{t+1} = \beta v_t + (1 - \beta) \nabla L(w_t)$
@@ -160,14 +181,6 @@ Updating:
 
 Different momentum methods vary in the way they calculate the velocity.
 
-#### RMSprop (root mean square propagation)
-
-RMSprop uses an exponentially weighted moving average of the squared gradients to prevent the learning rate from decreasing too quickly.
-
-Formula:
-- $v_{t+1} = \beta v_t + (1 - \beta) (\nabla L(w_t))^2$
-- $w_{t+1} = w_t - \eta / (\sqrt{v_{t+1}} + \epsilon) \nabla L(w_t)$
-
 #### Nesterov momentum
 
 Nesterov momentum adds a momentum term that is a weighted average of the past gradients with the weighting decreasing exponentially as the gradients get further away in time.
@@ -178,15 +191,44 @@ Formula:
 - $v_{t+1} = \beta v_t + \nabla L(w_t - \eta \beta v_t)$
 - $w_{t+1} = w_t - \eta v_{t+1}$
 
-In practice, instead of computing the gradient at the future position, an equivalent reformulation is used:
+In practice, here, instead of computing the gradient at the future position, an equivalent reformulation is used:
 - $w_t = w_{t-1} - \beta v_{t-1} + (1+\beta)v_t$
 - where $v_t = \beta v_{t-1} - \eta \nabla L(w_t)$
 
 Therefore, the implementation is a Nesterov-style parameter update, or a reformulated Nesterov momentum update, not the original Nesterov algorithm.
 
+### RMSprop (root mean square propagation)
+
+RMSprop is an adaptive learning algorithm that uses an exponentially weighted moving average of the squared gradients to prevent the learning rate from decreasing too quickly. Larger gradients result in smaller learning rates and smaller gradients result in larger learning rates.
+
+Formula:
+- $v_{t+1} = \beta v_t + (1 - \beta) (\nabla L(w_t))^2$
+- $w_{t+1} = w_t - \eta / (\sqrt{v_{t+1}} + \epsilon) \nabla L(w_t)$
+
+First the running average $v$ is updated, and then the weights $w$ with the scaled learning rate are updated.
+
+Here, $\beta$ is the decay rates for the moving average of the square gradient, $\eta$ is the learning rate, and $\epsilon$ is a small number.
+
 ### Adam optimizer
 
-Adam (adaptive moment estimation) combines momentum and RMSprop techniques to adjust learning rates during training.
+Adam (adaptive moment estimation) combines the momentum and RMSprop techniques to adjust learning rates during training.
+
+First moment (mean) estimate
+- $m_t = \beta_1 m_{t-1} + (1-\beta_1) \nabla L(w_t) $
+
+Second moment (varience) estimate
+- $v_t = \beta_2 v_{t-1} + (1-\beta_2) (\nabla L(w_t)^2) $
+
+Bias correction
+- $\hat{m}_t = m_t / (1 - \beta_1^t) $
+- $\hat{v}_t = v_t / (1 - \beta_2^t) $
+
+Final weight/bias update
+- $w_{t+1} = w_t - \hat{m}_t \eta / (\sqrt{\hat{v}_t} + \
+epsilon)$
+
+Here, $\beta_1$ and $\beta_2$ are the decay rates for the moving averages of the gradient and the squared gradient, respectively; $\eta$ is the learning rate; and $\epsilon$ is a small value.
+
 
 ## To run
 
@@ -201,7 +243,7 @@ To show a pair plot of the final features, run:
 To run the program (preprocessing, training, and prediction), enter:
 - make run PROGRAM_MODE=program_mode OPTIMIZER=optimizer
 
-In the chosen program_mode ("pre_process", "train", "predict", or "all") with the chosen optimizer ("gd", "nest", "adam", or "rms").
+with the chosen program_mode ("preprocess", "train", "predict", or "all") and the chosen optimizer ("gd", "nest", "adam", or "rms").
 
 Other default running modes from Makefile:
 - make preprocess OPTIMIZER=optimizer
@@ -211,11 +253,11 @@ Other default running modes from Makefile:
 To compare the four optimizers, run:
 - make compare
 
-It is also possible to run the program from the command line with additional options:
-- python tester.py --program_mode all --optimizer rms --hidden_size 10 --split_size 0.2 --max_epochs 10000 --learn_factor 0.1 --verbose 1
+It is also possible to run the program from the command line with additional options, e.g.,
+- python tester.py --program_mode all --optimizer rms --hidden_layers 8,8,8 --split_size 0.2 --max_epochs 10000 --learn_factor 0.1 --verbose 1
 
 where:
-- hidden_size indicates the number of neurons in the hidden layer
+- hidden_layers indicates the numbers of neurons in the hidden layers
 - split_size indicates the size of the test set with respect to the train set (between 0.1 and 0.9)
 - max_epochs indicates the maximum number of epochs (may not be reached if early stopping criteria are met)
 - learn_factor indicates the multiple of the learning rate for the optimizer (i.e., learning rate = learn_factor * default learning rate). Default learning rates are:

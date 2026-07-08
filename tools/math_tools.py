@@ -7,16 +7,17 @@ def relu(x):
     """ReLU function"""
     return np.maximum(0, x)
 
+
 def sigmoid(x):
     """sigmoid function"""
     x = np.clip(x, -500, 500)
     return 1 / (1 + np.exp(-x))
-    
-    
+
+
 def softmax(z):
-    """softmax function"""
-    exp_z = np.exp(z - np.max(z))  # For numerical stability
-    return exp_z / exp_z.sum()
+    """Compute softmax for each row of z"""
+    exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))
+    return exp_z / np.sum(exp_z, axis=1, keepdims=True)
 
 
 def binary_cross_entropy(y_true, y_pred, epsilon=1e-15):

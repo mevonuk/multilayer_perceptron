@@ -50,6 +50,7 @@ def load_split_data(data_type, filename="split_datasets.pkl"):
             print(f"Error parsing pickle file: {e}.")
             sys.exit(1)
 
+    activation = split_datasets['activation']
     if data_type == 'test':
         X = split_datasets['X_test']
         y = split_datasets['y_test']
@@ -57,13 +58,17 @@ def load_split_data(data_type, filename="split_datasets.pkl"):
         X = split_datasets['X_train']
         y = split_datasets['y_train']
 
-    return X, y
+    return X, y, activation
 
 
-def save_split_data(X_train, y_train, X_test, y_test, filename="split_datasets.pkl"):
+def save_split_data(
+        X_train, y_train,
+        X_test, y_test,
+        activation, filename="split_datasets.pkl"):
     """saves the test and train data sets into a pickle file"""
     # store the datasets to be stowed in pickle file
     split_datasets = {
+        'activation' : activation,
         'X_train' : X_train,
         'X_test' : X_test,
         'y_train' : y_train,
