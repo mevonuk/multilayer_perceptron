@@ -113,7 +113,7 @@ Softmax can be used as the activation function for the output layer even though 
 
 Note that:
 - sigmoid: $\sigma(z) = 1/(1+\exp(-z))$
-- softmax: $\sigma(z)_i = \frac{\exp(z_i)}{\sum_{j=1}^{K} \exp(z_j)}$
+- softmax: $\sigma(z) = \frac{\exp(z)}{\sum_{j=1}^{K} \exp(z_j)}$
 
 ## Program modes
 
