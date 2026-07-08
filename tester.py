@@ -78,47 +78,58 @@ def main():
 
     args = parser.parse_args()
 
-    program_mode = args.program_mode
-    hidden_layers = [int(x) for x in args.hidden_layers.split(",")]
-    max_epochs = args.max_epochs
-    learn_factor = args.learn_factor
-    split_size = args.split_size
-    verbose = args.verbose
-    optimizer = args.optimizer
-    activation = args.activation
-    save_figs = args.pdf
+    try:
+        program_mode = args.program_mode
+        hidden_layers = [int(x) for x in args.hidden_layers.split(",")]
+        max_epochs = args.max_epochs
+        learn_factor = args.learn_factor
+        split_size = args.split_size
+        verbose = args.verbose
+        optimizer = args.optimizer
+        activation = args.activation
+        save_figs = args.pdf
 
-    print("Running program in program mode:", program_mode)
+        # check values
+        for layer in hidden_layers:
+            if layer < 2:
+                raise ValueError("bad layer size in hidden_layers")
+        if max_epochs < 10:
+            raise ValueError("bad max_epoch limit")
+
+        print("Running program in program mode:", program_mode)
+        
+        if program_mode == "preprocess":
+            preprocess(split_size, activation, verbose)
+
+        elif program_mode == "train":
+            training(
+                max_epochs,
+                learn_factor,
+                optimizer,
+                hidden_layers,
+                activation,
+                save_figs,
+                verbose
+            )
+
+        elif program_mode == "predict":
+            predicting(optimizer, activation, verbose)
+
+        else:
+            preprocess(split_size, activation, verbose)
+            training(
+                max_epochs,
+                learn_factor,
+                optimizer,
+                hidden_layers,
+                activation,
+                save_figs,
+                verbose)
+            predicting(optimizer, activation, verbose)
+
+    except (TypeError, Exception, KeyboardInterrupt) as e:
+        print(e)
     
-    if program_mode == "preprocess":
-        preprocess(split_size, activation, verbose)
-
-    elif program_mode == "train":
-        training(
-            max_epochs,
-            learn_factor,
-            optimizer,
-            hidden_layers,
-            activation,
-            save_figs,
-            verbose
-        )
-
-    elif program_mode == "predict":
-        predicting(optimizer, activation, verbose)
-
-    else:
-        preprocess(split_size, activation, verbose)
-        training(
-            max_epochs,
-            learn_factor,
-            optimizer,
-            hidden_layers,
-            activation,
-            save_figs,
-            verbose)
-        predicting(optimizer, activation, verbose)
-
 
 if __name__ == "__main__":
     main()
