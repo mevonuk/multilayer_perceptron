@@ -50,5 +50,6 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 	find . -type f -name "*.pkl" -delete
+	find . -type f -name "*.pdf" -delete
 
 .PHONY: clean, activate, deactivate, run, preprocess, train, predict, plot, help

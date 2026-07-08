@@ -17,6 +17,14 @@ def main():
     )
 
     parser.add_argument(
+        "--pdf",
+        type=int,
+        default=0,
+        choices=[0, 1],
+        help="Save figures as PDFs"
+    )
+
+    parser.add_argument(
         "--program_mode",
         type=str,
         default="all",
@@ -78,6 +86,7 @@ def main():
     verbose = args.verbose
     optimizer = args.optimizer
     activation = args.activation
+    save_figs = args.pdf
 
     print("Running program in program mode:", program_mode)
     
@@ -91,6 +100,7 @@ def main():
             optimizer,
             hidden_layers,
             activation,
+            save_figs,
             verbose
         )
 
@@ -105,6 +115,7 @@ def main():
             optimizer,
             hidden_layers,
             activation,
+            save_figs,
             verbose)
         predicting(optimizer, activation, verbose)
 

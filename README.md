@@ -132,7 +132,8 @@ The main program can be run in different program modes: preprocess; train; predi
 - early stopping is implemented
 - plots training metrics (accuracy, precision, recall, F1) versus Epoch (compare mode)
 - plots loss and accuracy versus epoch for the training and validation sets (individual optimizers)
-- saves weights and biases of trained model to a pickle file as well as the model achitechture
+    - to save figures as PDFs, add option: --pdf 1
+- saves weights and biases of trained model to a pickle file, as well as the model achitechture
 
 ### predict
 

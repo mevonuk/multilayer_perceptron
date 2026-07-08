@@ -57,7 +57,10 @@ def train_model(max_epochs, learn_factor, optimizer, hidden_layers, activation, 
     return train_loss, val_loss, train_acc, val_acc
 
 
-def training(max_epochs, learn_factor, optimizer, hidden_layers, activation, verbose):
+def training(
+        max_epochs, learn_factor,
+        optimizer, hidden_layers,
+        activation, save_figs, verbose):
     """train according to optimizer type and plot training history"""
     try:
 
@@ -69,8 +72,8 @@ def training(max_epochs, learn_factor, optimizer, hidden_layers, activation, ver
             train_loss, val_loss, train_acc, val_acc = train_model(
                 max_epochs, learn_factor, optimizer, hidden_layers, activation, 1)
 
-            plot2(train_loss, val_loss, 'Loss')
-            plot2(train_acc, val_acc, 'Accuracy')
+            plot2(train_loss, val_loss, optimizer + ' Loss', save_fig=save_figs)
+            plot2(train_acc, val_acc, optimizer + ' Accuracy', save_fig=save_figs)
 
         else:
 
@@ -91,16 +94,16 @@ def training(max_epochs, learn_factor, optimizer, hidden_layers, activation, ver
             
             plot_compare(
                 train_loss_gd, train_loss_adam, train_loss_nest, train_loss_rms,
-                'Training Loss')
+                'Compare Training Loss', save_fig=save_figs)
             plot_compare(
                 val_loss_gd, val_loss_adam, val_loss_nest, val_loss_rms,
-                'Validation Loss')
+                'Compare Validation Loss', save_fig=save_figs)
             plot_compare(
                 train_acc_gd, train_acc_adam, train_acc_nest, train_acc_rms,
-                'Training accuracy')
+                'Compare Training accuracy', save_fig=save_figs)
             plot_compare(
                 val_acc_gd, val_acc_adam, val_acc_nest, val_acc_rms,
-                'Validation accuracy')
+                'Compare Validation accuracy', save_fig=save_figs)
 
 
     except (TypeError, Exception, KeyboardInterrupt) as e:
