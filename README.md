@@ -4,7 +4,7 @@
 
 Introduction to artificial neural networks implementing multilayer perceptron to predict a malignant or benign cancer diagnosis for cell masses.
 
-$\it{This project has been created as part of the 42 curriculum.}$
+*This project has been created as part of the 42 curriculum.*
 
 ### Contributor
 - M. Evonuk (https://github.com/mevonuk)
