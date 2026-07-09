@@ -1,0 +1,97 @@
+from tools.load_save_data import load, save_split_data
+from tools.split import split_data
+from tools.preprocessing import hot_code, label_data
+import numpy as np
+import pandas as pd
+
+
+def split_preprocess(split_size, activation, verbose):
+    """Pre-process data:
+    split into training and test sets
+    save to file"""
+    print("\nPre-processing data...")
+    data = None
+    try:
+        dataset = "data/data.csv"
+
+        # load dataset
+        data = load(dataset)
+        # label columns
+        data = label_data(data)
+
+        # chosen features
+        features = [
+            'radius_mean',
+            'texture_mean',
+            'perimeter_mean',
+            'fractal_dim_mean',
+            'perimeter_std',
+            'concave_pts_std',
+            'radius_worst',
+            'concavity_worst',
+            'concave_pts_worst',
+            'symmetry_worst',
+        ]
+
+        # features = [
+        #     'radius_mean',
+        #     'radius_std',
+        #     'radius_worst',
+        #     'texture_mean',
+        #     'texture_std',
+        #     'texture_worst',
+        #     'perimeter_mean',
+        #     'perimeter_std',
+        #     'perimeter_worst',
+        #     'area_mean',
+        #     'area_std',
+        #     'area_worst',
+        #     'smoothness_mean',
+        #     'smoothness_std',
+        #     'smoothness_worst',
+        #     'compactness_mean',
+        #     'compactness_std',
+        #     'compactness_worst',
+        #     'concavity_mean',
+        #     'concavity_std',
+        #     'concavity_worst',
+        #     'concave_pts_mean',
+        #     'concave_pts_std',
+        #     'concave_pts_worst',
+        #     'symmetry_mean',
+        #     'symmetry_std',
+        #     'symmetry_worst',
+        #     'fractal_dim_mean',
+        #     'fractal_dim_std',
+        #     'fractal_dim_worst',
+        # ]
+
+        # one-hot code the diagnosis
+        if verbose: print("One-hot encoding diagnosis...")
+        data = hot_code(data, activation, 'M', 'diagnosis', 'one_hot')
+
+        # extract X and y data arrays
+        # y is the diagnosis one-hot coded
+        # X contains the normalized features: chosen based on the graph analysis
+        if verbose: print("Extract X and y data arrays")
+        X = data.loc[:, data.columns.intersection(features)]
+
+        labels = data["label"].to_numpy()
+
+        if activation == "sigmoid":
+            y = labels.reshape(-1, 1)
+        else:
+            y = np.eye(2)[labels]
+            
+        # Split the dataset into test and train sets
+        X_train, X_test, y_train, y_test = split_data(
+            X, pd.DataFrame(y), test_size=split_size, random_seed=None, v=verbose)
+
+
+        print(X_test, y_test)
+
+        # store the datasets to be stowed in a pickle file
+        save_split_data(X_train, y_train, X_test, y_test, activation)
+
+    except (TypeError, Exception, KeyboardInterrupt) as e:
+        print(e)

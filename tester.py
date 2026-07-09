@@ -1,4 +1,5 @@
 import argparse
+from split_preprocess import split_preprocess
 from preprocess import preprocess
 from train import training
 from predict import predicting
@@ -28,7 +29,7 @@ def main():
         "--program_mode",
         type=str,
         default="all",
-        choices=["preprocess", "train", "predict", "all"],
+        choices=["split", "preprocess", "train", "predict", "all"],
         help="Mode of program execution"
     )
 
@@ -101,6 +102,9 @@ def main():
         if program_mode == "preprocess":
             preprocess(split_size, activation, verbose)
 
+        elif program_mode == "split":
+            split_preprocess(split_size, activation, verbose)
+
         elif program_mode == "train":
             training(
                 max_epochs,
@@ -116,7 +120,7 @@ def main():
             predicting(optimizer, activation, verbose)
 
         else:
-            preprocess(split_size, activation, verbose)
+            split_preprocess(split_size, activation, verbose)
             training(
                 max_epochs,
                 learn_factor,

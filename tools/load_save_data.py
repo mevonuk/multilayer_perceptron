@@ -4,7 +4,7 @@ import pickle
 import sys
 
 
-def load(path: str) -> pd.core.frame.DataFrame:
+def load(path: str, header=None) -> pd.core.frame.DataFrame:
     """takes file path of dataset to load,
     returns the dataset loaded as a pandas.DataFrame"""
     if not isinstance(path, str):
@@ -24,7 +24,7 @@ def load(path: str) -> pd.core.frame.DataFrame:
 
     try:
         # load data with pandas using most common character encoding
-        data = pd.read_csv(path, encoding='utf-8', header=None)
+        data = pd.read_csv(path, encoding='utf-8', header=header)
         return data
     except pd.errors.ParserError:
         print("Error parsing CSV. File may not be properly formatted.")

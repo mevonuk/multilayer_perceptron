@@ -40,8 +40,8 @@ def plot_compare(
     plt.grid(True)
     plt.legend()
 
-    plt.show()
-
     # Save high-res figure
     if save_fig:
         plt.savefig(fig_title.replace(' ', '_') + ".pdf", dpi=600)
+    else:
+        plt.show()    

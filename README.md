@@ -118,7 +118,7 @@ Note that:
 
 The main program can be run in different program modes: preprocess; train; predict; and all.
 
-### preprocess
+### preprocess (option split)
 
 - hot codes the diagnosis field according to the use of sigmoid or softmax (default) activation functions
 - splits the data into train and test sets
@@ -238,13 +238,13 @@ Then, activate the virtual environment.
 To show a pair plot of the final features, run:
 - make plot
 
-To run the program (preprocessing, training, and prediction), enter:
+To run the program (preprocessing/splitting data, training, and prediction), enter:
 - make run PROGRAM_MODE=program_mode OPTIMIZER=optimizer
 
-with the chosen program_mode ("preprocess", "train", "predict", or "all") and the chosen optimizer ("gd", "nest", "adam", or "rms").
+with the chosen program_mode ("split", "train", "predict", or "all") and the chosen optimizer ("gd", "nest", "adam", or "rms").
 
 Other default running modes from Makefile:
-- make preprocess OPTIMIZER=optimizer
+- make split OPTIMIZER=optimizer
 - make train OPTIMIZER=optimizer
 - make predict OPTIMIZER=optimizer
 
@@ -255,7 +255,7 @@ It is also possible to run the program from the command line with additional opt
 - python tester.py --program_mode all --optimizer rms --hidden_layers 8,8,8 --split_size 0.2 --max_epochs 10000 --learn_factor 0.1 --verbose 1 --pdf 1 --activation softmax
 
 where:
-- program_mode can be 'all', 'preprocess', 'train', or 'predict'
+- program_mode can be 'all', 'split', 'train', or 'predict'
 - optimizer can be 'gd', 'nest', 'rms', 'adam', or 'compare'
 - hidden_layers indicates the numbers of neurons in the hidden layers
 - split_size indicates the size of the test set with respect to the train set (between 0.1 and 0.9)

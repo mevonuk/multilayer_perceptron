@@ -154,7 +154,6 @@ class MLP:
                 print(f'F1:        training: {t_F1:.4f}, validation: {v_F1:.4f}')
 
             # Early stopping if validation loss stabilizes
-            # if val_loss < best_val_loss:
             if val_loss < best_val_loss - min_delta:
                 best_val_loss = val_loss
                 
