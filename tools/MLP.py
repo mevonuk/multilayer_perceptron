@@ -134,8 +134,20 @@ class MLP:
             out_train = self.make_prediction(X_train)
             out_val = self.make_prediction(X_val)
 
-            t_acc, t_per, t_recall, t_F1 = my_metrics(out_train, y_train)
-            v_acc, v_per, v_recall, v_F1 = my_metrics(out_val, y_val)
+            if self.activation == 'softmax':
+                y_t = np.argmax(y_train, axis=1)
+                out_t = np.argmax(out_train, axis=1)
+            else:
+                y_t = y_train
+                out_t = out_train
+            t_acc, t_per, t_recall, t_F1 = my_metrics(out_t, y_t)
+            if self.activation == 'softmax':
+                y_v = np.argmax(y_val, axis=1)
+                out_v = np.argmax(out_val, axis=1)
+            else:
+                y_v = y_val
+                out_v = out_val
+            v_acc, v_per, v_recall, v_F1 = my_metrics(out_v, y_v)
 
             training_precision.append(t_per)
             training_F1.append(t_F1)

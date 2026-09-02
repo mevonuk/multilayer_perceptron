@@ -1,6 +1,7 @@
 from tools.load_save_data import load_split_data
 from tools.math_tools import my_metrics, binary_cross_entropy
 from tools.MLP import MLP
+import numpy as np
 
 
 def predict(optimizer, X, y, activation, verbose):
@@ -17,8 +18,11 @@ def predict(optimizer, X, y, activation, verbose):
         loss = binary_cross_entropy(y.to_numpy(), output_prob)
 
         # compare prediction to real values
+        if activation == 'softmax':
+            y_val = np.argmax(y.to_numpy(), axis=1)
+            output_pred = np.argmax(output_prediction, axis=1)
         accuracy, precision, recall, F1 = my_metrics(
-            output_prediction, y.to_numpy())
+            output_pred, y_val)
 
         return accuracy, precision, recall, F1, loss
 
