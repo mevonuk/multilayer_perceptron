@@ -16,13 +16,17 @@ def preprocess(split_size, activation, verbose):
     data = None
     try:
         train_dataset = "data_training.csv"
-        test_dataset = "data_validation.csv"
+        test_dataset = "data_test.csv"
 
         # load dataset
         traindata = load(train_dataset, header='infer')
+        # label columns
+        traindata = label_data(traindata)
 
         # load dataset
         testdata = load(test_dataset, header='infer')
+        # label columns
+        testdata = label_data(testdata)
 
         # chosen features
         features = [

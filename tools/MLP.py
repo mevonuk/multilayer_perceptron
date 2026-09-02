@@ -24,7 +24,7 @@ class MLP:
             output_size = 2
 
         # set seed for repeatability
-        np.random.seed(42)
+        # np.random.seed(42)
 
         self.optimizer = optimizer
         if hidden_layers is None:
