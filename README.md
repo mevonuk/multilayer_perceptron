@@ -61,15 +61,12 @@ Pair plots of the mean feature values reveal that the benign and malignant class
 - 'texture_mean',
 - 'perimeter_mean',
 - 'fractal_dim_mean',
-- 'radius_std',
 - 'perimeter_std',
 - 'concave_pts_std',
-- 'symmetry_std',
 - 'radius_worst',
-- 'texture_worst',
 - 'concavity_worst',
 - 'concave_pts_worst',
-- 'symmetry_worst',
+- 'symmetry_worst'
 
 with the other features showing more overlap between the two classes.
 

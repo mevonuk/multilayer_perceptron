@@ -12,7 +12,6 @@ def preprocess(split_size, activation, verbose):
     save to pickle file
     Note that this is for testing only when train and tet sets are provided as csv"""
     print("\nPre-processing data from already split grading .csv files...")
-    print("Note that these files already contain the column headers.")
     data = None
     try:
         train_dataset = "data_training.csv"
@@ -40,39 +39,6 @@ def preprocess(split_size, activation, verbose):
             'concavity_worst',
             'concave_pts_worst',
             'symmetry_worst',
-        ]
-
-        features = [
-            'radius_mean',
-            'radius_std',
-            'radius_worst',
-            'texture_mean',
-            'texture_std',
-            'texture_worst',
-            'perimeter_mean',
-            'perimeter_std',
-            'perimeter_worst',
-            'area_mean',
-            'area_std',
-            'area_worst',
-            'smoothness_mean',
-            'smoothness_std',
-            'smoothness_worst',
-            'compactness_mean',
-            'compactness_std',
-            'compactness_worst',
-            'concavity_mean',
-            'concavity_std',
-            'concavity_worst',
-            'concave_pts_mean',
-            'concave_pts_std',
-            'concave_pts_worst',
-            'symmetry_mean',
-            'symmetry_std',
-            'symmetry_worst',
-            'fractal_dim_mean',
-            'fractal_dim_std',
-            'fractal_dim_worst',
         ]
 
         # one-hot code the diagnoses in the two datasets
