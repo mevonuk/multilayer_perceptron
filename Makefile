@@ -30,7 +30,7 @@ run:
 	$(PYTHON) tester.py --program_mode $(PROGRAM_MODE) --optimizer $(OPTIMIZER) --activation $(ACTIVATION)
 
 split:
-	$(PYTHON) tester.py --program_mode split_preprocess --optimizer $(OPTIMIZER) --activation $(ACTIVATION)
+	$(PYTHON) tester.py --program_mode split --optimizer $(OPTIMIZER) --activation $(ACTIVATION)
 
 preprocess:
 	$(PYTHON) tester.py --program_mode preprocess --optimizer $(OPTIMIZER) --activation $(ACTIVATION)

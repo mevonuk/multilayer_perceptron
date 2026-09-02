@@ -9,9 +9,10 @@ def preprocess(split_size, activation, verbose):
     """Pre-process data:
     read in files split into training and test sets
     one-hot
-    save to pickle file"""
+    save to pickle file
+    Note that this is for testing only when train and tet sets are provided as csv"""
     print("\nPre-processing data from already split grading .csv files...")
-    print("Note that these files alread contain the column headers.")
+    print("Note that these files already contain the column headers.")
     data = None
     try:
         train_dataset = "data_training.csv"

@@ -26,7 +26,7 @@ Backpropagation involves computing the gradient of the loss with respect to the 
 
 ## Dataset
 
-The dataset consists of a csv file with 32 columns. The features describe the characteristics of cell nuclei of breast masses extracted with fine-needle aspiration. The diagnosis column has values of M or B (malignant or benign, respectively); this is the column to be predicted.
+The dataset consists of a csv file with 32 columns. The features describe the characteristics of cell nuclei of breast masses extracted via fine-needle aspiration. The diagnosis column has values of M or B (malignant or benign, respectively); this is the column to be predicted.
 
 Number of instances: 569
 
@@ -116,9 +116,9 @@ Note that:
 
 ## Program modes
 
-The main program can be run in different program modes: preprocess; train; predict; and all.
+The main program can be run in different program modes: split (preproessing); train; predict; and all.
 
-### preprocess (option split)
+### preprocessing (option split)
 
 - hot codes the diagnosis field according to the use of sigmoid or softmax (default) activation functions
 - splits the data into train and test sets
@@ -145,7 +145,7 @@ Note that, if running separately, options for predict (e.g., optimizer) will be 
 
 ## Optimizers
 
-The default optimizer is standard gradient descent ("gd"). Also available are momentum-based optimizers, RMSprop ('rms') and Nesterov ('nest') momentum, as well as Adam ('adam'). The  various optimizers return similar results but the standard gradient descent method takes much longer to converge and has slightly lower accuracy, precision, recall, and F1 metrics than the other methods.
+The default optimizer is standard gradient descent ('gd'). Also available are momentum-based optimizers, RMSprop ('rms') and Nesterov ('nest') momentum, as well as Adam ('adam'). The  various optimizers return similar results but the standard gradient descent method takes much longer to converge and has slightly lower accuracy, precision, recall, and F1 metrics than the other methods.
 
 ### Standard gradient descent
 
@@ -185,7 +185,7 @@ Different momentum methods vary in the way they calculate the velocity.
 
 Nesterov momentum adds a momentum term that is a weighted average of the past gradients with the weighting decreasing exponentially as the gradients get further away in time.
 
-- it computes the gradient at a future position instead of that the current position
+- it computes the gradient at a future position instead of at the current position
 
 Formula:
 - $v_{t+1} = \beta v_t + \nabla L(w_t - \eta \beta v_t)$
@@ -207,7 +207,7 @@ Formula:
 
 First the running average $v$ is updated, and then the weights $w$ with the scaled learning rate are updated.
 
-Here, $\beta$ is the decay rates for the moving average of the square gradient, $\eta$ is the learning rate, and $\epsilon$ is a small number.
+Here, $\beta$ is the decay rate for the moving average of the square gradient, $\eta$ is the learning rate, and $\epsilon$ is a small number.
 
 ### Adam optimizer
 
@@ -271,3 +271,10 @@ When you are finished, deactivate the virtual environment and run:
 - make clean
 
 This is will remove the pickle files, virtual environment, pdf files, and pycache files.
+
+In evaluation mode, if the train and test sets are supplied as .csv files (i.e., data_training.csv and data_test.csv, respectively), use
+- python preprocess.py
+to read in the .csv files, preprocess them, and save the processed files to the pickle file format used by the rest of the program. Then, proceed to run the program with the new version of the split data:
+- python train.py
+- python predict.py
+adding any options as appropriate.
